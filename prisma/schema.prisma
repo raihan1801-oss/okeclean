@@ -1,0 +1,504 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions", "fullTextSearch", "filterJson"]
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  name         String  @unique
+  password     String
+  email        String  @unique
+  telp         String  @default("")
+  point        Int     @default(0)
+  address      Json?
+  image        String  @default("")
+  sex          String  @default("")
+  verified     Boolean @default(false)
+  multi_auth   Boolean @default(false)
+  subscribtion Json?
+
+  role   String
+  access Json   @default("{}")
+
+  created_transaction Transaction[] @relation("created_by")
+  related_transaction Transaction[] @relation("related_by")
+}
+
+model Feature {
+  id Int @id @default(autoincrement())
+
+  name String @unique
+  meta Json   @default("{}")
+  data Json
+
+  @@index([name])
+}
+
+model Transaction {
+  id Int @id @default(autoincrement())
+
+  status      String
+  cost        Decimal
+  data        Json
+  created_on  DateTime
+  finished_on DateTime?
+
+  created_by User  @relation(name: "created_by", fields: [created_by_user], references: [id])
+  related_by User? @relation(name: "related_by", fields: [related_by_user], references: [id])
+
+  created_by_user Int
+  related_by_user Int?
+}
+
+model Internal {
+  id Int @id @default(autoincrement())
+
+  username String @unique
+  password String
+  role     String
+  access   Json
+
+  name  String?
+  email String? @unique
+  telp  String?
+  image String?
+  mfa   Boolean @default(false)
+
+  chatNodeId Int
+  chatNode   ChatNode @relation(fields: [chatNodeId], references: [id])
+
+  history InternalHistory?
+}
+
+model InternalHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  internalId Int?      @unique
+  internal   Internal? @relation(fields: [internalId], references: [id])
+}
+
+model Buyer {
+  id Int @id @default(autoincrement())
+
+  username String @unique
+  password String
+  role     String
+
+  name      String?
+  email     String    @unique
+  telp      String?
+  sex       String?
+  birthdate DateTime?
+  image     String?
+  mfa       Boolean   @default(false)
+  verified  Boolean   @default(false)
+
+  chatNodeId Int
+  chatNode   ChatNode @relation(fields: [chatNodeId], references: [id])
+
+  address    BuyerAddress[]
+  cart       Cart?
+  groupOrder GroupOrder[]
+
+  history BuyerHistory?
+  order   Order[]
+  rating  Rating[]
+}
+
+model BuyerHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  buyerId Int?   @unique
+  buyer   Buyer? @relation(fields: [buyerId], references: [id])
+}
+
+model BuyerAddress {
+  id Int @id @default(autoincrement())
+
+  label    String
+  selected Boolean
+  pinned   Boolean
+  name     String
+  telp     String
+  value    String
+  detail   String
+  area     String?
+  local    String?
+  place    String?
+  position Float[]
+
+  buyerId    Int?
+  buyer      Buyer?       @relation(fields: [buyerId], references: [id])
+  groupOrder GroupOrder[]
+  delivery   Delivery[]
+}
+
+model Store {
+  id Int @id @default(autoincrement())
+
+  name     String  @unique
+  telp     String
+  address  String
+  area     String
+  local    String
+  place    String
+  position Float[]
+  image    String
+
+  chatNodeId Int
+  chatNode   ChatNode @relation(fields: [chatNodeId], references: [id])
+
+  seller  Seller[]
+  product Product[]
+  order   Order[]
+
+  delivery Delivery[]
+
+  history StoreHistory?
+}
+
+model StoreHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  storeId Int?   @unique
+  store   Store? @relation(fields: [storeId], references: [id])
+}
+
+model Seller {
+  id Int @id @default(autoincrement())
+
+  username String @unique
+  password String
+  role     String
+
+  name         String?
+  email        String  @unique
+  notification Boolean @default(false)
+  mfa          Boolean @default(false)
+
+  storeId Int?
+  store   Store? @relation(fields: [storeId], references: [id])
+
+  history SellerHistory?
+}
+
+model SellerHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  sellerId Int?    @unique
+  seller   Seller? @relation(fields: [sellerId], references: [id])
+}
+
+model Courier {
+  id Int @id @default(autoincrement())
+
+  username String @unique
+  password String
+  role     String
+
+  name       String?
+  email      String  @unique
+  telp       String?
+  address    String?
+  area       String?
+  local      String?
+  place      String?
+  position   Float[]
+  image      String?
+  mfa        Boolean @default(false)
+  contracted Boolean @default(false)
+
+  chatNodeId Int
+  chatNode   ChatNode @relation(fields: [chatNodeId], references: [id])
+
+  delivery Delivery[]
+
+  history CourierHistory?
+}
+
+model CourierHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  courierId Int?     @unique
+  courier   Courier? @relation(fields: [courierId], references: [id])
+}
+
+model Cart {
+  id Int @id @default(autoincrement())
+
+  checked Boolean
+
+  buyerId Int   @unique
+  buyer   Buyer @relation(fields: [buyerId], references: [id])
+
+  selectedItem SelectedItem[]
+
+  history CartHistory?
+}
+
+model CartHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  cartId Int?  @unique
+  cart   Cart? @relation(fields: [cartId], references: [id])
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+
+  name        String
+  description String  @default("") @db.Text
+  image       String
+  price       Decimal @db.Money
+  stock       Int
+  weight      Float   @default(0)
+  weightUnit  String
+  fresh       Boolean
+  discount    Int     @default(0)
+  forSale     Boolean @default(true)
+
+  storeId Int
+  store   Store @relation(fields: [storeId], references: [id])
+
+  selectedItem SelectedItem[]
+  orderedItem  OrderedItem[]
+
+  history ProductHistory?
+}
+
+model ProductHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  productId Int?     @unique
+  product   Product? @relation(fields: [productId], references: [id])
+}
+
+model SelectedItem {
+  id Int @id @default(autoincrement())
+
+  amount  Int
+  checked Boolean
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  cartId    Int?
+  cart      Cart?   @relation(fields: [cartId], references: [id])
+}
+
+model OrderedItem {
+  id Int @id @default(autoincrement())
+
+  status       OrderStatus
+  amount       Int
+  price        Decimal     @db.Money
+  syncronized  Boolean     @default(true)
+  selectedItem Json
+
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model GroupOrder {
+  id Int @id @default(autoincrement())
+
+  status       OrderStatus
+  weight       Float
+  weightUnit   String
+  range        Float
+  rangeUnit    String
+  orderCost    Decimal     @db.Money
+  deliveryCost Decimal     @db.Money
+  totalCost    Decimal     @db.Money
+
+  order     Order[]
+  buyerId   Int
+  buyer     Buyer        @relation(fields: [buyerId], references: [id])
+  addressId Int
+  address   BuyerAddress @relation(fields: [addressId], references: [id])
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+
+  status     OrderStatus
+  weight     Float
+  weightUnit String
+  cost       Decimal     @db.Money
+
+  item         OrderedItem[]
+  groupOrderId Int
+  groupOrder   GroupOrder    @relation(fields: [groupOrderId], references: [id])
+  storeId      Int
+  store        Store         @relation(fields: [storeId], references: [id])
+  deliveryId   Int           @unique
+  delivery     Delivery      @relation(fields: [deliveryId], references: [id])
+  buyerId      Int
+  buyer        Buyer         @relation(fields: [buyerId], references: [id])
+
+  confirmed Boolean @default(false)
+
+  createOn DateTime  @default(now())
+  finishOn DateTime?
+
+  rating Rating?
+
+  history OrderHistory?
+}
+
+model OrderHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  orderId Int?   @unique
+  order   Order? @relation(fields: [orderId], references: [id])
+}
+
+model Delivery {
+  id Int @id @default(autoincrement())
+
+  courierId Int?
+  courier   Courier? @relation(fields: [courierId], references: [id])
+
+  status     OrderStatus
+  range      Float
+  rangeUnit  String
+  weight     Float
+  weightUnit String
+  cost       Decimal     @db.Money
+
+  proofImage String?
+  confirmed  Boolean @default(false)
+
+  sentOn    DateTime?
+  receiveOn DateTime?
+
+  senderId    Int
+  sender      Store        @relation(fields: [senderId], references: [id])
+  recipientId Int
+  recipient   BuyerAddress @relation(fields: [recipientId], references: [id])
+
+  order Order?
+
+  history DeliveryHistory?
+}
+
+model DeliveryHistory {
+  id Int @id @default(autoincrement())
+
+  data Json
+
+  deliveryId Int?      @unique
+  delivery   Delivery? @relation(fields: [deliveryId], references: [id])
+}
+
+model Rating {
+  id Int @id @default(autoincrement())
+
+  createAt DateTime @default(now())
+  comment  String
+  star     Int
+
+  buyerId Int
+  buyer   Buyer @relation(fields: [buyerId], references: [id])
+  orderId Int   @unique
+  order   Order @relation(fields: [orderId], references: [id])
+}
+
+model ChatNode {
+  id Int @id @default(autoincrement())
+
+  role  String
+  name  String          @default("")
+  desc  String          @default("")
+  image String          @default("")
+  type  ChatChannelType @default(PerToPer)
+
+  channel         ChatChannel[]
+  outgoingMessage ChatMessage[] @relation("sender")
+  ingoingMessage  ChatMessage[] @relation("recipient")
+
+  internal   Internal[]
+  buyer      Buyer[]
+  store      Store[]
+  courier    Courier[]
+  subscriber Subscriber[]
+}
+
+model ChatChannel {
+  id Int @id @default(autoincrement())
+
+  type ChatChannelType @default(PerToPer)
+
+  node    ChatNode[]
+  message ChatMessage[]
+}
+
+model ChatMessage {
+  id Int @id @default(autoincrement())
+
+  senderId  Int
+  sender    ChatNode   @relation("sender", fields: [senderId], references: [id])
+  recipient ChatNode[] @relation("recipient")
+
+  replyForId Int?
+  replyFor   ChatMessage?  @relation("ChatMessageToChatMessage", fields: [replyForId], references: [id])
+  replied    ChatMessage[] @relation("ChatMessageToChatMessage")
+
+  sentAt    DateTime  @default(now())
+  receiveAt DateTime?
+  readAt    DateTime?
+
+  image String?
+  text  String  @db.Text
+
+  channelId Int
+  channel   ChatChannel @relation(fields: [channelId], references: [id])
+}
+
+model Subscriber {
+  id          Int      @id @default(autoincrement())
+  role        String
+  userId      Int
+  nodeId      Int      @unique
+  node        ChatNode @relation(fields: [nodeId], references: [id])
+  subcription Json
+}
+
+enum OrderStatus {
+  Queue
+  Accept
+  Reject
+  Process
+  Delivery
+  Confirm
+  Done
+  Archive
+}
+
+enum ChatChannelType {
+  PerToPer
+  PerToGroup
+}

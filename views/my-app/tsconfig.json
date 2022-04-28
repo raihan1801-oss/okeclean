@@ -1,0 +1,52 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"moduleResolution": "node",
+		"module": "ESNext",
+		"lib": [
+			"ESNext",
+			"DOM"
+		],
+		"target": "es2020",
+		"importsNotUsedAsValues": "error",
+		"isolatedModules": true,
+		"resolveJsonModule": true,
+		"removeComments": true,
+		"sourceMap": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": true,
+		"checkJs": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": true,
+		"strictFunctionTypes": true,
+		"baseUrl": ".",
+		"types": [
+			"@types/mapbox__mapbox-sdk"
+		],
+		"paths": {
+			"$lib": [
+				"src/lib"
+			],
+			"$lib/*": [
+				"src/lib/*"
+			],
+			"$components/*": [
+				"src/components/*"
+			],
+			"$apis/*": [
+				"src/apis/*"
+			],
+			"$server/*": [
+				"../../*"
+			],
+		}
+	},
+	"include": [
+		"src/**/*.d.ts",
+		"src/**/*.js",
+		"src/**/*.ts",
+		"src/**/*.svelte"
+	]
+}

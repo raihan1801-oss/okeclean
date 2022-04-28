@@ -1,0 +1,61 @@
+$primary-color: #1B90FC;
+$secondary-color: #00796B;
+$tertiary-color: #263238;
+$success-color: #4caf50;
+$info-color: #00bcd4;
+$warning-color: #fb8c00;
+$error-color: #f44336;
+
+$text-primary-darken: #012970;
+
+$font-size-root: 16px;
+$border-radius-root: 4px;
+$line-height-root: 1.5;
+
+$rounded: ();
+
+$blockquote-font-size: 18px;
+$blockquote-font-weight: 300;
+
+$code-color: #c0341d;
+$code-padding: 0 0.4rem;
+$code-background-color: #fbe5e1;
+
+$kbd-color: #ffffff;
+$kbd-padding: 0.2rem 0.4rem;
+$kbd-background-color: #212529;
+
+$code-kbd-font-size: 85%;
+$code-kbd-border-radius: 3px;
+$code-kbd-font-weight: 900;
+
+$spacer: 4px;
+
+$body-font-family: 'Roboto', 'Segoe UI', sans-serif;
+
+$font-weights: ();
+$heading-font-family: $body-font-family;
+$headings: ();
+
+$grid-columns: 12;
+$grid-gutter: $spacer * 6;
+$form-grid-gutter: $spacer * 2;
+$grid-gutters: ();
+$grid-breakpoints: ();
+$display-breakpoints: ();
+
+$container-max-widths: ();
+$container-padding-x: $grid-gutter / 2;
+
+$transitions: ();
+
+$material-light-theme: ();
+$material-dark-elevation-colors: ();
+$material-dark-theme: ();
+
+:root {
+  --primary-color: #{$primary-color};
+  --secondary-color: #{$secondary-color};
+  --tertiary-color: #{$tertiary-color};
+  --text-primary-darken: #{$text-primary-darken};
+}

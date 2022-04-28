@@ -1,0 +1,9 @@
+@mixin elevation($level: 0, $revert: false, $color: #00000026) {
+  @if $revert {
+    box-shadow: (1px + $level) (-1px - $level) (3px + $level)  $color,
+    (-1px - $level) (1px + $level) (3px + $level)  $color;
+  } @else {
+    box-shadow: (1px + $level) (1px + $level) (3px + $level)  $color,
+    (-1px - $level) (-1px - $level) (3px + $level)  $color;
+  }
+}

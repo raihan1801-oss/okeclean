@@ -1,0 +1,61 @@
+{
+  "name": "my-app",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "engines": {
+    "node": "16.x.x"
+  },
+  "scripts": {
+    "dev": "svelte-kit dev",
+    "build": "svelte-kit build",
+    "package": "svelte-kit package",
+    "preview": "svelte-kit preview",
+    "prepare": "svelte-kit sync",
+    "test": "playwright test",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
+    "format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. .",
+    "tailwind:build": "tailwindcss -o build.css --minify"
+  },
+  "devDependencies": {
+    "@beyonk/svelte-mapbox": "^8.1.4",
+    "@mdi/js": "^6.6.96",
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@playwright/test": "^1.21.1",
+    "@rgossiaux/svelte-headlessui": "1.0.0-beta.12",
+    "@sveltejs/adapter-auto": "next",
+    "@sveltejs/adapter-node": "1.0.0-next.73",
+    "@sveltejs/kit": "next",
+    "@types/cookie": "^0.4.1",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "autoprefixer": "^10.4.5",
+    "cssnano": "^5.1.7",
+    "daisyui": "^2.14.2",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-svelte3": "^3.4.1",
+    "postcss": "^8.4.12",
+    "prettier": "^2.6.2",
+    "prettier-plugin-svelte": "^2.7.0",
+    "sass": "^1.51.0",
+    "svelte": "^3.47.0",
+    "svelte-calendar": "^3.1.6",
+    "svelte-carousel": "1.0.17-rc4",
+    "svelte-check": "^2.7.0",
+    "svelte-materialify": "^0.3.11",
+    "svelte-preprocess": "^4.10.6",
+    "tailwindcss": "^3.0.24",
+    "tslib": "^2.4.0",
+    "typescript": "~4.6.3",
+    "vite-plugin-live-reload": "^2.1.0"
+  },
+  "dependencies": {
+    "@mapbox/mapbox-sdk": "^0.13.3",
+    "@types/mapbox__mapbox-sdk": "^0.13.4",
+    "0http": "^3.1.2"
+  }
+}

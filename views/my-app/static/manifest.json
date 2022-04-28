@@ -1,0 +1,70 @@
+{
+  "version": "0alpha1",
+  "short_name": "Ada Ikan",
+  "name": "Ada Ikan Fish Market",
+  "description": "Bring the fish to your place",
+  "theme_color": "#42A5F5",
+  "background_color": "#42A5F5",
+  "display_override": [
+    "window-control-overlay",
+    "minimal-ui"
+  ],
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "categories": [
+    "shopping"
+  ],
+  "lang": "id",
+  "author": "Arwana Dev Team",
+  "developer": {
+    "name": "Anas Mubarak Yasin Mas'ud",
+    "url": "github.com/AnasMubarakYasin"
+  },
+  "content_security_policy": "connect-src 'self'; font-src 'self'; frame-src 'self'; img-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self'",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buy fish today",
+      "short_name": "Buy fish",
+      "description": "Buy fish and delivery to your place",
+      "url": "/checkout",
+      "icons": [
+        {
+          "src": "/logo.png",
+          "sizes": "512x512"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "/manifest.json"
+    }
+  ]
+}
