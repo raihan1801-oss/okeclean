@@ -1,8 +1,8 @@
 {
-  "version": "0alpha1",
-  "short_name": "Ada Ikan",
-  "name": "Ada Ikan Fish Market",
-  "description": "Bring the fish to your place",
+  "version": "0-alpha.1",
+  "short_name": "Oke Clean",
+  "name": "Oke Clean Web App",
+  "description": "Clean your house",
   "theme_color": "#42A5F5",
   "background_color": "#42A5F5",
   "display_override": [
@@ -13,13 +13,13 @@
   "start_url": "/",
   "scope": "/",
   "categories": [
-    "shopping"
+    "service"
   ],
   "lang": "id",
-  "author": "Arwana Dev Team",
+  "author": "bladerlaiga",
   "developer": {
-    "name": "Anas Mubarak Yasin Mas'ud",
-    "url": "github.com/AnasMubarakYasin"
+    "name": "oke clean",
+    "url": "https://github.com/raihan1801-oss/okeclean.git"
   },
   "content_security_policy": "connect-src 'self'; font-src 'self'; frame-src 'self'; img-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self'",
   "icons": [
@@ -30,25 +30,45 @@
       "purpose": "maskable"
     },
     {
-      "src": "/logo.png",
+      "src": "/logo-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/logo.png",
+      "src": "/logo-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "shortcuts": [
     {
-      "name": "Buy fish today",
-      "short_name": "Buy fish",
-      "description": "Buy fish and delivery to your place",
-      "url": "/checkout",
+      "name": "Mendaftar Pelanggan",
+      "short_name": "Mendaftar Pelanggan",
+      "description": "Mendaftar menjadi Pelanggan",
+      "url": "/entry/register?as=customer",
       "icons": [
         {
-          "src": "/logo.png",
+          "src": "/logo-192.png",
+          "sizes": "192x192"
+        },
+        {
+          "src": "/logo-512.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Masuk Pelanggan",
+      "short_name": "Masuk Pelanggan",
+      "description": "Masuk menjadi Pelanggan",
+      "url": "/entry/login?as=customer",
+      "icons": [
+        {
+          "src": "/logo-192.png",
+          "sizes": "192x192"
+        },
+        {
+          "src": "/logo-512.png",
           "sizes": "512x512"
         }
       ]
@@ -56,7 +76,7 @@
   ],
   "screenshots": [
     {
-      "src": "/logo.png",
+      "src": "/screenshot-1.png",
       "type": "image/png",
       "sizes": "512x512"
     }

@@ -160,7 +160,8 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/create`,
 		method: 'POST',
 		handler: async (request, reply) => {
-			reply.notImplemented();
+			const data = await chat.createContact(request.body);
+			reply.created(data);
 		},
 		schema: {},
 	});

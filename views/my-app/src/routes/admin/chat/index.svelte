@@ -16,7 +16,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	import type { ClientApi, User } from '../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'Chat';
 	const desc = '';
@@ -31,7 +32,7 @@
 	let drawerOpened = true;
 	let account = { image: '', name: '', role: '' };
 	let user_login = $user;
-	let connect_with = $page.query.get('connect_with');
+	let connect_with = $page.url.searchParams.get('connect_with');
 	let progress: Progress;
 
 	let messages_container: HTMLElement;
@@ -54,23 +55,33 @@
 			if (!user_login) {
 				return goto('/admin', {replaceState: true});
 			}
+			if (!user_login.chat_node_id) {
+				const contact = await client.chat.createContact({
+					id: user_login.id,
+					name: user_login.name,
+					image: user_login.image,
+					role: user_login.role,
+					type: 'per',
+				});
+				user_login.chat_node_id = contact.id;
+			}
 
 			account = {
 				image: user_login.image ?? '',
-				name: user_login.username,
+				name: user_login.name,
 				role: user_login.role
 			};
 
 			connect_with &&
 				(await client.chat.connectContact({
-					myId: user_login.chatNodeId,
+					myId: user_login.chat_node_id,
 					theirId: +connect_with
 				}));
 
-			channels = await client.chat.getChannels({ nodeId: user_login.chatNodeId });
+			channels = await client.chat.getChannels({ nodeId: user_login.chat_node_id });
 
 			await ws.open();
-			ws.send('connect', { nodeId: user_login.chatNodeId, channel: channels })
+			ws.send('connect', { nodeId: user_login.chat_node_id, channel: channels })
 				.receive('join', (data) => {
 					channels.push(data);
 					channels = channels;
@@ -81,8 +92,8 @@
 					if (document.visibilityState == 'hidden' && Notification.permission == 'granted') {
 						const notification = new Notification(data.sender.name, {
 							body: data.text,
-							badge: "logo.png",
-							icon: "logo.png",
+							badge: "/logo.png",
+							icon: "/logo.png",
 							tag: data.channelId + '',
 							renotify: true
 						});
@@ -116,11 +127,14 @@
 			if (!user_login) {
 				throw new Error();
 			}
+			if (!user_login.chat_node_id) {
+				throw new Error();
+			}
 			await client.chat.message({
 				data: {
 					text,
 					channelId: selected_channel_id,
-					senderId: user_login.chatNodeId
+					senderId: user_login.chat_node_id
 				}
 			});
 			text = '';
@@ -144,7 +158,7 @@
 	<meta name="description" content={desc} />
 </svelte:head>
 
-<Page {mode} class="text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-900">
+<Page {mode} class="bg-neutral text-neutral-content">
 	<section transition:fade class="flex">
 		<Drawer show={drawerOpened} class="bg-base-100">
 			<DrawerContent />
@@ -191,7 +205,7 @@
 								{#each channels[selected_channel_index].message as message}
 									<div
 										transition:scale
-										class="message {message.sender.id == $user?.chatNodeId ? 'mymessage' : ''}"
+										class="message {message.sender.id == $user?.chat_node_id ? 'mymessage' : ''}"
 									>
 										<div class="info">
 											<div class="">{message.sender.name}</div>

@@ -30,62 +30,69 @@ export class Service {
 	public clientApi!: ClientApi;
 	public client!: ClientStore;
 	public installed = false;
+	public options: { debug: boolean };
 	protected message_handlers = new Set<Function>();
-	constructor(public options?: { debug?: boolean }) {}
+	constructor(options: { debug?: boolean }) {
+		this.options = Object.assign({}, options, { debug: true });
+	}
 	public init() {
 		this.channel = new BroadcastChannel('main_channel');
 		this.channel.addEventListener('message', (event) => {
-			this.options?.debug && console.log(event);
+			this.options.debug && console.log(event);
 			for (const handler of this.message_handlers) {
 				handler(event.data);
 			}
 		});
 		this.clientApi = new ClientApi({
 			base: location.origin + '/server/push',
-			debug: this.options?.debug,
+			debug: this.options.debug,
 		});
-		this.client = new ClientStore({ debug: this.options?.debug }).init();
+		this.client = new ClientStore({ debug: this.options.debug }).init();
 	}
 	public async prompt() {
-		return 'default';
+		console.error("[Service] prompt not binded");
 	}
 	public async update() {
 		const service = await navigator.serviceWorker.ready;
 		await service.update();
 		return this;
 	}
-	public async register(url: string) {
+	public async register(url: string, { prevent_prompt = false, install_found = () => { }, update_found = () => { } } = {}) {
 		if ('ServiceWorker' in window) {
-			window.addEventListener('beforeinstallprompt', (event) => {
+			window.addEventListener('beforeinstallprompt', (event: Event) => {
 				console.log('[Service] window beforeinstallprompt');
-				this.options?.debug && console.log(event);
+				this.options.debug && console.log(event);
 				this.prompt = (event as BeforeInstallPromptEvent).prompt.bind(event);
+				install_found();
+				if (prevent_prompt) {
+					event.preventDefault();
+				}
 			});
 			window.addEventListener('appinstalled', (event) => {
 				console.log('[Service] window appinstalled');
-				this.options?.debug && console.log(event);
+				this.options.debug && console.log(event);
 				this.installed = true;
 			});
 
 			navigator.serviceWorker.startMessages();
 			navigator.serviceWorker.addEventListener('controllerchange', (event) => {
 				console.log('[Service] service worker controllerchange');
-				this.options?.debug && console.log(event);
+				this.options.debug && console.log(event);
 			});
 			navigator.serviceWorker.addEventListener('message', (event) => {
 				console.log('[Service] service worker message');
-				this.options?.debug && console.log(event);
+				this.options.debug && console.log(event);
 			});
 			navigator.serviceWorker.addEventListener('messageerror', (event) => {
 				console.log('[Service] service worker messageerror');
-				this.options?.debug && console.log(event);
+				this.options.debug && console.log(event);
 			});
 
 			let registration: ServiceWorkerRegistration;
 
 			if (
 				!navigator.serviceWorker.controller ||
-				navigator.serviceWorker.controller?.state == 'redundant'
+				navigator.serviceWorker.controller.state == 'redundant'
 			) {
 				registration = await navigator.serviceWorker.register(url, {
 					type: 'module',
@@ -98,13 +105,12 @@ export class Service {
 
 			registration.addEventListener('updatefound', (event) => {
 				console.log('[Service] service worker updatefound');
-				this.options?.debug && console.log(event);
+				this.options.debug && console.log(event);
+				update_found();
 			});
-			const relateds = await (
-				navigator as CustomNavigator
-			)?.getInstalledRelatedApps();
+			const relateds = await (navigator as CustomNavigator).getInstalledRelatedApps();
 			console.log('[Service] Related App');
-			this.options?.debug && console.log(relateds);
+			this.options.debug && console.log(relateds);
 		}
 	}
 	public async unregister() {
@@ -139,13 +145,13 @@ export class Service {
 			};
 			await this.clientApi
 				.request({
-					endpoint: 'subs',
+					endpoint: 'subscription',
 					method: 'POST',
 					body,
 				})
 				.send();
 		}
-		this.options?.debug && console.log(subscription);
+		this.options.debug && console.log(subscription);
 		return this;
 	}
 	public async unsubscribe(data: { nodeId: number }) {
@@ -154,7 +160,7 @@ export class Service {
 		if (subscription) {
 			await this.clientApi
 				.request({
-					endpoint: 'unsubs',
+					endpoint: 'unsubscription',
 					method: 'DELETE',
 					body: data,
 				})
@@ -176,18 +182,18 @@ export class Service {
 		}).send<WebPushResponse>();
 		return response.read();
 	}
-	
+
 	public async sync(tag: string) {
 		const service = (await navigator.serviceWorker
 			.ready) as ServiceWorkerRegistration & SyncManager;
-		await service?.sync.register(tag);
+		await service.sync.register(tag);
 		return this;
 	}
 	public async periodic(tag: string, options: { minInterval: number }) {
 		const service = (await navigator.serviceWorker
 			.ready) as ServiceWorkerRegistration & PeriodicSyncManager;
 		try {
-			await service?.periodicSync.register(tag, options);
+			await service.periodicSync.register(tag, options);
 		} catch (error: any) {
 			console.log(error);
 		}

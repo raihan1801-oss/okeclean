@@ -5,5 +5,5 @@
 </script>
 
 <div>
-  <p>Copyright &copy; 2021 Ada Ikan - Arwana, All Right Reserved.</p>
+  <p>Copyright &copy; 2022 Oke Clean, All Right Reserved.</p>
 </div>

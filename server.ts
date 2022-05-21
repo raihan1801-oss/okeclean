@@ -13,6 +13,7 @@ const opts = mri(process.argv.slice(2), {
 		verbose: false,
 	} as Options,
 }) as Options & mri.Argv;
+// @ts-ignore
 const tsconfig: typeof TsConfig = json.parse(
 	fs.readFileSync(path.join(__dirname, 'tsconfig.json')).toString()
 );

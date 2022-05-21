@@ -99,3 +99,6 @@ export type Subscribe = {
 }
 export type Unsubscribe = {
 }
+export type GetParam = {
+	id: number;
+}

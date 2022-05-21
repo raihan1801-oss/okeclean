@@ -36,8 +36,9 @@ export class EnvConfig {
 		const PORT = global ? nodeEnv.PORT ?? 0 : 5000;
 		const WS_PORT = global ? nodeEnv.PORT ?? 0 : 5050;
 		const PROJECT_ROOT_DIR = global ? nodeEnv.HOME ?? '' : cwd;
-		const CLIENT_ROOT_DIR = path.join(PROJECT_ROOT_DIR, 'views/client');
-		const ADMIN_ROOT_DIR = path.join(PROJECT_ROOT_DIR, 'views/admin');
+		// const CLIENT_ROOT_DIR = path.join(PROJECT_ROOT_DIR, 'views/client');
+		// const ADMIN_ROOT_DIR = path.join(PROJECT_ROOT_DIR, 'views/admin');
+		const MY_APP_ROOT_DIR = path.join(PROJECT_ROOT_DIR, 'views/my-app');
 		const BASE_API_PATH = '/api';
 		const appEnv = {
 			DEV: production != true,
@@ -73,11 +74,13 @@ export class EnvConfig {
 			SERVER_PUBLIC_DIR: path.join(PROJECT_ROOT_DIR, 'public'),
 			SERVER_PRIVATE_DIR: path.join(PROJECT_ROOT_DIR, 'private'),
 			SERVER_BUILD_DIR: path.join(PROJECT_ROOT_DIR, 'build'),
-			CLIENT_BUILD_DIR: path.join(CLIENT_ROOT_DIR, 'build'),
-			ADMIN_BUILD_DIR: path.join(ADMIN_ROOT_DIR, 'build'),
+			MY_APP_BUILD_DIR: path.join(MY_APP_ROOT_DIR, 'build'),
+			// CLIENT_BUILD_DIR: path.join(CLIENT_ROOT_DIR, 'build'),
+			// ADMIN_BUILD_DIR: path.join(ADMIN_ROOT_DIR, 'build'),
 			PROJECT_ROOT_DIR,
-			CLIENT_ROOT_DIR,
-			ADMIN_ROOT_DIR,
+			// CLIENT_ROOT_DIR,
+			// ADMIN_ROOT_DIR,
+			MY_APP_ROOT_DIR,
 
 			PUBLIC_KEY_DIR: PROJECT_ROOT_DIR,
 			PRIVATE_KEY_DIR: PROJECT_ROOT_DIR,
@@ -110,7 +113,7 @@ export class EnvConfig {
 			VITE_WS_SERVER_BASE_PATH: appEnv.WS_SERVER_BASE_PATH,
 			VITE_SERVER_STATIC_PATH: appEnv.SERVER_STATIC_PATH,
 			VITE_CLIENT_FETCH_MODE: appEnv.CLIENT_FETCH_MODE,
-			VITE_CLIENT_BUILD_DIR: appEnv.CLIENT_BUILD_DIR,
+			// VITE_CLIENT_BUILD_DIR: appEnv.CLIENT_BUILD_DIR,
 			VITE_LANDING_URL: appEnv.LANDING_URL,
 			VITE_MAP_KEY: appEnv.MAP_KEY,
 			VITE_EMAIL_KEY: appEnv.EMAIL_KEY,
@@ -121,12 +124,16 @@ export class EnvConfig {
 			path.resolve(cwd, '.env.json'),
 			JSON.stringify(appEnv, undefined, '\t')
 		);
+		// fs.writeFileSync(
+		// 	path.resolve(cwd, 'views/client', '.env'),
+		// 	parser(clientEnv)
+		// );
+		// fs.writeFileSync(
+		// 	path.resolve(cwd, 'views/admin', '.env'),
+		// 	parser(clientEnv)
+		// );
 		fs.writeFileSync(
-			path.resolve(cwd, 'views/client', '.env'),
-			parser(clientEnv)
-		);
-		fs.writeFileSync(
-			path.resolve(cwd, 'views/admin', '.env'),
+			path.resolve(cwd, 'views/my-app', '.env'),
 			parser(clientEnv)
 		);
 		if (verbose) {

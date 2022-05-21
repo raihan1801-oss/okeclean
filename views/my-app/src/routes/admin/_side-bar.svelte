@@ -13,8 +13,8 @@
 	<aside transition:slide class="side bg-gray-700">
 		<header class="navbar py-4 px-8">
 			<section class="w-full h-full relative">
-				<img src="logo.png" alt="Logo" class="h-full absolute" />
-				<div class="block flex-auto text-center font-bold">Ada Ikan</div>
+				<img src="../logo.png" alt="Logo" class="h-full absolute" />
+				<div class="block flex-auto text-center font-bold">Oke Clean</div>
 			</section>
 		</header>
 		<nav class="grid gap-4">

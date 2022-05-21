@@ -228,14 +228,14 @@
 				await goto('/', { replaceState: true });
 			},
 		},
-		{
-			name: 'Hapus Akun',
-			icon: mdiDeleteOutline,
-			sub: [],
-			action() {
-				showDeleteAccountDialog = true;
-			},
-		},
+		// {
+		// 	name: 'Hapus Akun',
+		// 	icon: mdiDeleteOutline,
+		// 	sub: [],
+		// 	action() {
+		// 		showDeleteAccountDialog = true;
+		// 	},
+		// },
 	];
 	let imageUrl = '';
 	let showDeleteAccountDialog = false;
@@ -288,7 +288,7 @@
 	}
 	async function unregister() {
 		progress.loading();
-		await buyer.logout();
+		// await buyer.logout();
 		goto('/');
 	}
 </script>

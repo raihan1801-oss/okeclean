@@ -4,8 +4,8 @@
 	export const prerender = true;
 
 	import { onMount, onDestroy, getContext, setContext } from 'svelte';
-	import { writable } from 'svelte/store';
-	import { goto, beforeNavigate, afterNavigate } from '$app/navigation';
+	// import { writable } from 'svelte/store';
+	import { goto } from '$app/navigation';
 	import { wait } from '$lib/helper';
 	import { session } from '$app/stores';
 </script>
@@ -49,6 +49,8 @@
 			service.init();
 			clientApi.init();
 
+			await clientApi.ready;
+
 			progress = 30;
 			const data = await clientApi.user.auth();
 			message = 'Aunthenticated';
@@ -60,7 +62,6 @@
 
 			if (!$session.splashed) {
 				$session = { splashed: true };
-				open = true;
 			}
 		} catch (error: any) {
 			is_failed = true;
@@ -73,21 +74,19 @@
 				progress = 100;
 				await wait({ timeout: 500 });
 				$session = { splashed: true };
-				await goto('/admin/signin', { replaceState: true });
-				// if (!location.pathname.startsWith('/admin/sign')) {
-				// 	await goto('/admin/signin', { replaceState: true });
-				// }
+				if (!location.pathname.startsWith('/admin/sign')) {
+					await goto('/admin/signin', { replaceState: true });
+				}
 			}
 		} finally {
+			await wait({ timeout: 500 });
+			open = true;
 		}
 	});
 	onDestroy(async () => {});
 </script>
 
 <!-- <slot /> -->
-
-<!-- {#if !navigating}
-{/if} -->
 
 {#if !open}
 	<Page class="bg-neutral text-neutral-content">

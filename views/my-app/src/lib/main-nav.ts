@@ -20,7 +20,7 @@ export default [
   {
     name: 'Pesan',
     icon: mdiEmailOpenOutline,
-    link: '/message',
+    link: '/chat',
   },
   {
     name: 'Akun',

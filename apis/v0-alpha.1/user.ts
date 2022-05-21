@@ -24,6 +24,7 @@ import type {
 	VerifyOTP,
 	Subscribe,
 	Unsubscribe,
+	GetParam,
 } from 'schemas/v0-alpha.1/user';
 
 import fs from 'fs-extra';
@@ -38,10 +39,10 @@ import { FileStorage } from 'utility/storage';
 
 const route: FastifyPluginAsync = async (server, opts) => {
 	const {
-		env: { SERVER_PUBLIC_DIR, SERVER_STATIC_PATH },
+		env: { SERVER_PUBLIC_DIR, SERVER_STATIC_PATH, PROD },
 	} = process as Env<typeof EnvJson>;
 	const api = 'user';
-	const { jwt, orm, rbac, totp } = server;
+	const { jwt, orm, rbac, totp, mail } = server;
 	const FILE_DIR = path.join(SERVER_PUBLIC_DIR, api);
 	const IMAGE_DIR = FileStorage.path.join(FILE_DIR, 'image');
 	const IMAGE_STATIC = FileStorage.path.join(SERVER_STATIC_PATH, api, 'image');
@@ -63,6 +64,17 @@ const route: FastifyPluginAsync = async (server, opts) => {
 				sub: data.id,
 				role: data.role,
 			});
+			if (data.role == 'customer' && PROD) {
+				const code = totp.generate(request.body.email);
+				reply.log.info("OTP Code: " + code);
+				await mail.send({
+					from: `no-reply@` + request.headers.host,
+					to: data.email,
+					subject: 'Your OTP Code',
+					priority: 'high',
+					html: otp_template(code),
+				});
+			}
 			reply.header('authorization', `Bearer ${token}`);
 			reply.created<Data>(data);
 			server.event.emit(`model:${api}:change`, data);
@@ -135,7 +147,14 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		handler: async (request, reply) => {
 			const user = await feature.generate_otp(request.body);
 			const code = totp.generate(request.body.email);
-			console.log("[otp] code", code);
+			reply.log.info("OTP Code: " + code);
+			await mail.send({
+				from: `no-reply@` + request.headers.host,
+				to: user.email,
+				subject: 'Your OTP Code',
+				priority: 'high',
+				html: otp_template(code),
+			});
 			reply.ok(user);
 		},
 		schema: {},
@@ -157,13 +176,24 @@ const route: FastifyPluginAsync = async (server, opts) => {
 	});
 
 	server.route<{
-		Body: SearchQuery;
+		Body: GetParam;
 	}>({
 		url: `/${api}/search`,
 		method: 'POST',
 		handler: async (request, reply) => {
-			const user = await request.identify();
-			const data = await model.search(request.body);
+			// const user = await request.identify("admin");
+			const data = await feature.get(request.body);
+			reply.ok(data);
+		},
+		schema: {},
+	});
+
+	server.route({
+		url: `/${api}/search-many`,
+		method: 'GET',
+		handler: async (request, reply) => {
+			// const user = await request.identify("admin");
+			const data = await feature.get_all();
 			reply.ok(data);
 		},
 		schema: {},
@@ -179,6 +209,12 @@ const route: FastifyPluginAsync = async (server, opts) => {
 			delete request.body.data.password;
 
 			const data = await model.update(request.body);
+			if (data.chat_node_id) {
+				await orm.chatNode.update({where: {id: data.chat_node_id}, data: {
+					name: data.name,
+					image: data.image,
+				}})
+			}
 			reply.ok(data);
 			// const data = await model.get({ where: { id: user.sub } });
 
@@ -193,6 +229,19 @@ const route: FastifyPluginAsync = async (server, opts) => {
 			// } else {
 			// 	throw Api.Error.FailedAuthentication('Unknown User');
 			// }
+		},
+		schema: {},
+	});
+
+	server.route<{
+		Body: GetParam;
+	}>({
+		url: `/${api}/delete`,
+		method: 'DELETE',
+		handler: async (request, reply) => {
+			const user = await request.identify("admin");
+			const data = await model.delete({ where: { id: request.body.id } });
+			reply.ok(data);
 		},
 		schema: {},
 	});
@@ -296,5 +345,28 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		schema: {},
 	});
 };
+
+function otp_template(code: string) {
+	return `
+		<!DOCTYPE html>
+		<html lang="en">
+			<head>
+				<meta charset="utf-8" />
+				<meta name="author" content="bladerlaiga" />
+				<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+				<meta name="theme-color" content="#42A5F5" />
+				<title>Your Code OTP</title>
+			</head>
+			<body style="max-width: 100vw; min-height: 100vh; padding: 32px; display: grid; align-content: start; gap: 4px;">
+				<h1 style="padding: 0;">Dear Registerant</h1>
+				<h2 style="padding: 0;">Thank you for registering with Oke Clean</h2>
+				<p style="font-size: 16px;">To continue, please verify your E-mail address.</p>
+				<p style="font-size: 16px;">Attention, do not give OTP code to anyone, your OTP code: <strong>${code}</strong>, is valid for up to 60 seconds from the start of your registration and do not refresh or close your verification page.</p>
+				<h3 style="padding: 0;">Warm Regards</h3>
+				<h3 style="padding: 0;"><em>Oke Clean</em></h3>
+			</body>
+		</html>
+	`;
+}
 
 export default route;

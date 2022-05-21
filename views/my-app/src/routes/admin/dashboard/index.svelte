@@ -6,8 +6,6 @@
 	import type { ClientApi } from '$apis/index';
 	import type { User } from '$lib/store';
 
-	// import type { ClientApi, User, Service } from '../__layout.svelte';
-
 	const title = 'Dashboard';
 	const desc = 'Dashboard';
 </script>

@@ -25,7 +25,8 @@
 
 	export type { BuyerClient, Service };
 
-	const token = new Token('buyer', { debug: dev });
+	const token = new Token('customer', { debug: dev });
+	const token_cleaner = new Token('cleaner', { debug: dev });
 	const api = new Api({
 		base: APIS_URL,
 		wsbase: WS_URL,
@@ -35,6 +36,7 @@
 	});
 
 	const userApi = new UserApi(api, token);
+	const cleaner_api = new UserApi(api, token_cleaner);
 	const featureApi = new FeatureApi(api, token);
 	const transactionApi = new TransactionApi(api, token);
 
@@ -50,6 +52,7 @@
 	const chatApi = new ChatApi(api, token);
 	const buyer = new BuyerClient({
 		user: userApi,
+		cleaner: cleaner_api,
 		feature: featureApi,
 		transaction: transactionApi,
 

@@ -15,7 +15,7 @@
 <Appbar class="px-8">
 	<section class="w-full h-full relative flex items-center">
 		<img src="/logo.png" alt="Logo" width="32" height="32" class="absolute" />
-		<div class="block flex-auto text-center font-bold">Ada Ikan</div>
+		<div class="block flex-auto text-center font-bold">Oke Clean</div>
 	</section>
 </Appbar>
 <nav class="flex flex-col gap-4">

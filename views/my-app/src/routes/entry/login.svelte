@@ -1,35 +1,28 @@
 <script context="module" lang="ts">
-	import {
-		MaterialAppMin,
-		AppBar,
-		Button,
-		Icon,
-		TextField,
-		Select,
-	} from "svelte-materialify/src";
-	import ProgressLinear from "$components/progress-linear.svelte";
-	import Alert from "$components/alert.svelte";
-	import { mdiEye, mdiEyeOff, mdiChevronLeft } from "@mdi/js";
+	import { MaterialAppMin, AppBar, Button, Icon, TextField, Select } from 'svelte-materialify/src';
+	import ProgressLinear from '$components/progress-linear.svelte';
+	import Alert from '$components/alert.svelte';
+	import { mdiEye, mdiEyeOff, mdiChevronLeft } from '@mdi/js';
 
-	import { onMount, onDestroy, getContext } from "svelte";
+	import { onMount, onDestroy, getContext } from 'svelte';
 
-	import { fade } from "svelte/transition";
-	import { goto } from "$app/navigation";
-	import { page } from "$app/stores";
+	import { fade } from 'svelte/transition';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 
-	import type { Context, Roles } from "./__layout.svelte";
-	import type { ObserverUnsafe } from "$lib/helper";
+	import type { Context, Roles } from './__layout.svelte';
+	import type { ObserverUnsafe } from '$lib/helper';
+	import type { Data } from '$apis/user';
 </script>
 
 <script lang="ts">
-	const user = getContext<Context>("layout");
-	const roles = getContext<Roles>("roles");
-	const is_desktop = getContext<ObserverUnsafe<boolean>>("is_desktop");
+	const user = getContext<Context>('layout');
+	const roles = getContext<Roles>('roles');
+	const is_desktop = getContext<ObserverUnsafe<boolean>>('is_desktop');
 	let alert: Alert;
 	let loader: ProgressLinear;
-	let name = "";
-	let password = "";
-	let role = $page.url.searchParams.get("role") ?? "customer";
+	let name = '';
+	let password = '';
 	let showPassword = false;
 	let disableSubmit = false;
 
@@ -45,29 +38,33 @@
 			loader.loading();
 			alert.hide();
 			disableSubmit = true;
-			if (role == "customer") {
-				await user.user.login({
-					name,
-					password,
-				});
-				role = "";
-			} else if (role == "cleaner") {
-				await user.user.login({
-					name,
-					password,
-				});
-			} else {
-				throw new Error("Unknown Role");
+
+			const response = await user.customer.api
+				.request({
+					endpoint: 'login',
+					method: 'POST',
+					body: {
+						name,
+						password
+					}
+				})
+				.send<Data>();
+			const token = response.raw.headers.get('authorization')?.split(' ')[1];
+			const data = await response.read();
+			if (token) {
+				const session = user.customer.token.clone(data.role as any).init();
+				await session.store({ token });
 			}
-			alert.setState("success");
-			alert.setText("Berhasil Masuk");
+
+			alert.setState('success');
+			alert.setText('Berhasil Masuk');
 			alert.show();
 
-			goto("/" + role, { replaceState: true });
+			goto('/' + data.role, { replaceState: true });
 		} catch (error: any) {
 			disableSubmit = false;
 
-			alert.setState("error");
+			alert.setState('error');
 			alert.setText(error.message);
 			alert.show();
 
@@ -94,25 +91,16 @@
 		<main>
 			{#if $is_desktop}
 				<header transition:fade class="title">
-					<img class="logo" src="logo.png" alt="ada ikan" height="64" />
+					<img class="logo" src="/logo.png" alt="oke clean" height="64" />
 					<span>Oke Clean</span>
 				</header>
 			{/if}
 			<div class="spacer" />
-			<form
-				on:submit|preventDefault={submit}
-				class={$is_desktop ? "card p-32" : ""}
-			>
+			<form on:submit|preventDefault={submit} class={$is_desktop ? 'card p-32' : ''}>
 				<fieldset>
 					<div class="title">
 						{#if !$is_desktop}
-							<img
-								transition:fade
-								class="logo"
-								src="logo.png"
-								alt="ada ikan"
-								height="64"
-							/>
+							<img transition:fade class="logo" src="/logo.png" alt="oke clean" height="64" />
 							<span transition:fade>Masuk</span>
 						{:else}
 							<span class="f-18 f-500">Masuk</span>
@@ -122,48 +110,25 @@
 						<Alert bind:this={alert} />
 					</div>
 					<div class="content">
-						<Select
-							bind:value={role}
-							items={roles}
-							class="textfield"
-							placeholder={$is_desktop ? "" : "Sebagai"}
-							solo={!$is_desktop}
-							outlined={$is_desktop}
-							required
-						>
-							{#if $is_desktop}
-								Sebagai
-							{/if}
-						</Select>
 						<TextField
 							bind:value={name}
 							class="textfield"
-							placeholder={$is_desktop ? "" : "Username"}
-							solo={!$is_desktop}
-							outlined={$is_desktop}
+							outlined
 							autocomplete="username"
 							required
 						>
-							{#if $is_desktop}
-								Username
-							{/if}
+							Username
 						</TextField>
 						<div>
 							<TextField
 								class="textfield"
 								bind:value={password}
-								placeholder={$is_desktop ? "" : "Password"}
-								solo={!$is_desktop}
-								outlined={$is_desktop}
-								type={showPassword ? "text" : "password"}
+								outlined
+								type={showPassword ? 'text' : 'password'}
 								autocomplete="current-password"
 								required
 							>
-								<div>
-									{#if $is_desktop}
-										Password
-									{/if}
-								</div>
+								<div>Password</div>
 								<div slot="append">
 									<Button
 										fab
@@ -181,27 +146,13 @@
 									</Button>
 								</div>
 							</TextField>
-							<div class="t-end f-14">
-								{#if role == "buyer"}
-									<a
-										transition:fade
-										class={$is_desktop ? "black-text" : "white-text"}
-										href="/entry/reset/step-1">Lupa Password?</a
-									>
-								{/if}
-							</div>
 						</div>
 					</div>
 					<div class="btns">
-						<Button type="submit" size="large" disabled={disableSubmit}
-							>Masuk</Button
-						>
+						<Button type="submit" size="large" disabled={disableSubmit}>Masuk</Button>
 						<div class="t-center black-text">
 							<div class="f-14 f-500">Belum Punya Akun?</div>
-							<a
-								class={$is_desktop ? "primary-text" : "white-text"}
-								href="/entry/register"
-							>
+							<a class={$is_desktop ? 'primary-text' : 'white-text'} href="/entry/register">
 								Register
 							</a>
 						</div>
@@ -213,8 +164,8 @@
 </div>
 
 <style lang="scss">
-	@import "../../components/common";
-	@import "../../components/elevation";
+	@import '../../components/common';
+	@import '../../components/elevation';
 	.card {
 		@include elevation;
 		border-radius: 6px;

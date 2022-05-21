@@ -332,7 +332,7 @@
 														type="number"
 														step="1000"
 														min="1000"
-														max="100000"
+														max="1000000"
 														placeholder="25000"
 														required
 														class="input input-bordered w-full"

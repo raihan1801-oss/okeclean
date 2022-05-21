@@ -92,9 +92,11 @@ export default class App {
 			await this.app.register(import('fastify-metrics'), {
 				endpoint: '/server/metrics',
 			});
+			// @ts-ignore 
 			await this.app.register(import('fastify-multipart'), {
 				limits: { fileSize: 10_000_000 },
 			});
+			// @ts-ignore 
 			await this.app.register(import('fastify-static'), {
 				root: env.SERVER_PUBLIC_DIR,
 				prefix: env.SERVER_STATIC_PATH,
@@ -128,6 +130,7 @@ export default class App {
 				ping: 50000,
 			});
 			await this.app.register(import('project/plugins/info'));
+			// @ts-ignore 
 			await this.app.register(import('fastify-autoload'), {
 				dir:
 					env.SERVER_ENV == 'development'

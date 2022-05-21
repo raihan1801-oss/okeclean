@@ -25,7 +25,8 @@
 	const buyer = getContext<BuyerClient>('buyer');
 	const is_desktop = getContext<ObserverUnsafe<boolean>>('is_desktop');
 	const service = getContext<Service>('service');
-	const profile = writable(buyer.get());
+	// const profile = writable(buyer.get());
+	let user_login: BuyerClient.User;
 	let progress: ProgressLinear;
 	let snackbar: Snackbar;
 	let location = false;
@@ -44,10 +45,11 @@
 	async function init() {
 		try {
 			await buyer.ready;
-			if (!$profile) {
-				$profile = await buyer.auth();
-				buyer.set($profile);
-			}
+			user_login = await buyer.api.user.auth();
+			// if (!$profile) {
+			// 	$profile = await buyer.auth();
+			// 	buyer.set($profile);
+			// }
 			ask_cache();
 			ask_geolocation();
 			ask_notification();
@@ -125,20 +127,20 @@
 	async function request_push() {
 		try {
 			progress.loading();
-			if (!$profile) throw new Error('User not found');
-			if (push_notification) {
-				console.log("unsubscribe");
-				await service.unsubscribe({
-					nodeId: $profile.chatNodeId,
-				});
-			} else {
-				console.log("subscribe");
-				await service.subscribe({
-					role: 'buyer',
-					userId: $profile.id,
-					nodeId: $profile.chatNodeId,
-				});
-			}
+			// if (!$profile) throw new Error('User not found');
+			// if (push_notification) {
+			// 	console.log("unsubscribe");
+			// 	await service.unsubscribe({
+			// 		nodeId: $profile.chatNodeId,
+			// 	});
+			// } else {
+			// 	console.log("subscribe");
+			// 	await service.subscribe({
+			// 		role: 'buyer',
+			// 		userId: $profile.id,
+			// 		nodeId: $profile.chatNodeId,
+			// 	});
+			// }
 		} catch (error: any) {
 			console.error(error);
 		} finally {
@@ -240,7 +242,7 @@
 		/>
 		<main class="main">
 			<form id="setting" on:submit|preventDefault="{update}">
-				{#if $profile}
+				{#if user_login}
 					<List>
 						<Subheader>Locations</Subheader>
 						<ListItem>
@@ -324,7 +326,7 @@
 								>Using 2 factor authentication for Login</span
 							>
 							<span slot="append">
-								<Switch bind:checked="{$profile.mfa}" />
+								<Switch bind:checked="{user_login.multi_auth}" />
 							</span>
 						</ListItem>
 					</List>

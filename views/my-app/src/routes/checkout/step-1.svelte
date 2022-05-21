@@ -56,7 +56,7 @@
 	import { mdiClipboardTextClockOutline } from '$lib/icons';
 	import ProgressLinear from '$components/progress-linear.svelte';
 	import UserUnauthDialog from '$components/user-unauth-dialog.svelte';
-    import Snackbar from "$components/snackbar.svelte";
+	import Snackbar from '$components/snackbar.svelte';
 	import Appbar from '../_appbar.svelte';
 
 	import { Currency } from '$lib/helper';
@@ -111,8 +111,9 @@
 	let jenis_kelamin_terpilih = 0;
 	let user_login: BuyerClient.User;
 	let progress: ProgressLinear;
-    let snackbar: Snackbar;
+	let snackbar: Snackbar;
 	let showUserUnauthDialog = false;
+	let total_cost = 0;
 
 	$: loading = progress?.active;
 
@@ -128,6 +129,10 @@
 			});
 			luas_bangunan = (daily_cleaning.data as unknown as DailyCleaningFeature).building_areas;
 			detail_pekerjaan = (daily_cleaning.data as unknown as DailyCleaningFeature).job_details;
+			total_cost = luas_bangunan[luas_bangunan_terpilih].cost;
+			for (const iterator of detail_pekerjaan) {
+				total_cost += iterator.count * 20_000;
+			}
 		} catch (error: any) {
 			if (error.type == client.api.buyer.api.Error.FailedAuthentication.type) {
 				showUserUnauthDialog = true;
@@ -144,6 +149,7 @@
 		try {
 			progress.loading();
 			$session = {
+				splashed: false,
 				checkout: {
 					id: 0,
 					status: 'wait',
@@ -156,11 +162,11 @@
 							building_area: luas_bangunan[luas_bangunan_terpilih],
 							job_details: detail_pekerjaan,
 							gender: jenis_kelamin[jenis_kelamin_terpilih],
-							cost: luas_bangunan[luas_bangunan_terpilih].cost
+							cost: total_cost
 						}
 					},
 					services: ['Daily Cleaning'],
-					total_cost: luas_bangunan[luas_bangunan_terpilih].cost
+					total_cost: total_cost
 				}
 			};
 			goto('step-2', { replaceState: true });
@@ -188,7 +194,7 @@
 			<form class="section" on:submit|preventDefault={submit}>
 				<h2 class="t-2">Pilih Layanan</h2>
 				<section class="card subsection">
-					<h3 class="t-3">Luas Bangunan</h3>
+					<h3 class="t-3">Durasi Pekerjaan</h3>
 					<ul class="l-card">
 						{#if !user_login}
 							{#each Array(6) as item}
@@ -207,6 +213,10 @@
 										class="subcard m-1 {luas_bangunan_terpilih == index ? 'active' : ''}"
 										on:click={(event) => {
 											luas_bangunan_terpilih = index;
+											total_cost = luas_bangunan[luas_bangunan_terpilih].cost;
+											for (const iterator of detail_pekerjaan) {
+												total_cost += iterator.count * 20_000;
+											}
 										}}
 									>
 										<div>{item.hour} Jam</div>
@@ -245,6 +255,7 @@
 											on:click={() => {
 												if (item.count > 0) {
 													item.count--;
+													total_cost -= 20_000;
 													item = item;
 												}
 											}}
@@ -259,6 +270,7 @@
 											on:click={() => {
 												if (item.count < 100) {
 													item.count++;
+													total_cost += 20_000;
 													item = item;
 												}
 											}}
@@ -271,7 +283,7 @@
 						{/if}
 					</ul>
 				</section>
-				<section class="card subsection">
+				<!-- <section class="card subsection">
 					<h3 class="t-3">Pekerja</h3>
 					<ul class="l-card">
 						{#each jenis_kelamin as item, index}
@@ -289,18 +301,18 @@
 							</li>
 						{/each}
 					</ul>
-				</section>
+				</section> -->
 				<section class="subsection card submit">
 					<h3 class="t-3">Total Biaya</h3>
 					<div>
-						Rp. {Currency.toMoney(luas_bangunan[luas_bangunan_terpilih].cost)}
+						Rp. {Currency.toMoney(total_cost)}
 					</div>
 					<Button type="submit" size="large" class="primary-color">Selanjutnya</Button>
 				</section>
 			</form>
 		</main>
 		<UserUnauthDialog bind:active={showUserUnauthDialog} />
-        <Snackbar bind:this={snackbar} />
+		<Snackbar bind:this={snackbar} />
 	</MaterialAppMin>
 </div>
 

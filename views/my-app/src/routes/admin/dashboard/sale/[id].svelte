@@ -20,7 +20,8 @@
 
 	import { Currency, Diff, wait } from '$lib/helper';
 
-	import type { ClientApi, User } from '../../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'Sales';
 	const desc = '';
@@ -36,7 +37,8 @@
 	let progress: Progress;
 
 	let id = +$page.params.id;
-	let sale: ClientApi.Admin.SaleDetail;
+	let transaction: ClientApi.Transaction;
+	let transaction_data: ClientApi.Transaction.TransactionData;
 	let business: ClientApi.Admin.Data['business'];
 	let copy: any = {};
 	let contact: { name: string; nodeId: number }[] = [];
@@ -44,8 +46,8 @@
 	let menu_chat = false;
 
 	$: {
-		if (sale) {
-			const changed = Diff.object(copy, sale);
+		if (transaction) {
+			const changed = Diff.object(copy, transaction);
 			if (changed) {
 				disable = false;
 			} else {
@@ -59,37 +61,46 @@
 	async function init() {
 		try {
 			await client.ready;
-			business = await client.admin.getBusiness();
-			sale = await client.admin.sale(id);
-			sale.createOn = new Date(sale.createOn).toLocaleString() as any;
-			sale.finishOn = sale.finishOn
-				? (new Date(sale.finishOn).toLocaleString() as any)
+			transaction = await client.transaction.get({ id });
+			transaction.created_on = (new Date(transaction.created_on).toISOString().slice(0, -4) +
+				'000') as any;
+			transaction.finished_on = transaction.finished_on
+				? ((new Date(transaction.finished_on).toISOString().slice(0, -4) + '000') as any)
 				: '';
-			sale.delivery.sentOn = sale.delivery.sentOn
-				? (new Date(sale.delivery.sentOn).toLocaleString() as any)
-				: '';
-			sale.delivery.receiveOn = sale.delivery.receiveOn
-				? (new Date(sale.delivery.receiveOn).toLocaleString() as any)
-				: '';
-			copy = Diff.objectCopy(sale);
-			contact = [
-				{
-					name: 'Buyer',
-					nodeId: sale.buyer.chatNodeId
-				},
-				{
-					name: 'Store',
-					nodeId: sale.delivery.sender.chatNodeId
-				},
-				...(sale.delivery.courier
-					? [
-							{
-								name: 'Courier',
-								nodeId: sale.delivery.courier.chatNodeId
-							}
-					  ]
-					: [])
-			];
+			transaction_data = transaction.data as any;
+			copy = Diff.objectCopy(transaction);
+
+			// business = await client.admin.getBusiness();
+			// sale = await client.admin.sale(id);
+			// sale.createOn = new Date(sale.createOn).toLocaleString() as any;
+			// sale.finishOn = sale.finishOn
+			// 	? (new Date(sale.finishOn).toLocaleString() as any)
+			// 	: '';
+			// sale.delivery.sentOn = sale.delivery.sentOn
+			// 	? (new Date(sale.delivery.sentOn).toLocaleString() as any)
+			// 	: '';
+			// sale.delivery.receiveOn = sale.delivery.receiveOn
+			// 	? (new Date(sale.delivery.receiveOn).toLocaleString() as any)
+			// 	: '';
+			// copy = Diff.objectCopy(sale);
+			// contact = [
+			// 	{
+			// 		name: 'Buyer',
+			// 		nodeId: sale.buyer.chatNodeId
+			// 	},
+			// 	{
+			// 		name: 'Store',
+			// 		nodeId: sale.delivery.sender.chatNodeId
+			// 	},
+			// 	...(sale.delivery.courier
+			// 		? [
+			// 				{
+			// 					name: 'Courier',
+			// 					nodeId: sale.delivery.courier.chatNodeId
+			// 				}
+			// 		  ]
+			// 		: [])
+			// ];
 		} catch (error: any) {
 		} finally {
 			progress.hiding();
@@ -106,7 +117,7 @@
 			progress.showing();
 			disable = true;
 
-			if (!sale) throw new Error('');
+			if (!transaction) throw new Error('');
 		} catch (error: any) {
 			disable = false;
 		} finally {
@@ -120,7 +131,7 @@
 	<meta name="description" content={desc} />
 </svelte:head>
 
-<Page {mode} class="text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-900">
+<Page {mode} class="bg-neutral text-neutral-content">
 	<section transition:fade class="flex">
 		<Drawer show={drawerOpened} class="bg-base-100">
 			<DrawerContent />
@@ -135,49 +146,105 @@
 					<div class="text-2xl font-bold">{title}</div>
 				</section>
 				<form on:submit|preventDefault={save} class="grid p-6 bg-base-100 rounded-lg">
-					{#if sale}
+					{#if transaction}
 						<div class="grid gap-12 w-[500px] justify-self-center">
 							<div class="grid gap-4">
 								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
 									<div class="flex">
 										<div class="text-base font-semibold">Order</div>
 										<div class="flex-grow" />
-										<div class="badge badge-md badge-info">{sale.status}</div>
+										<div class="badge badge-md badge-info">{transaction.status}</div>
 									</div>
 									<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
 									<div class="flex">
 										<div class="text-sm">#ID</div>
 										<div class="flex-grow" />
-										<div class="text-sm">{sale.id}</div>
+										<div class="text-sm">{transaction.id}</div>
 									</div>
 									<div class="flex justify-between">
 										<div for="order-createat" class="text-sm">Create at</div>
-										<div class="text-sm">{sale.createOn}</div>
+										<div class="text-sm">{transaction.created_on}</div>
 									</div>
 									<div class="flex justify-between">
 										<div for="order-finishat" class="text-sm">Finish at</div>
-										<div class="text-sm">{sale.finishOn}</div>
+										<div class="text-sm">{transaction.finished_on}</div>
 									</div>
 								</section>
 								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
 									<div class="flex">
+										<div class="text-base font-semibold">Customer</div>
+									</div>
+									<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
+									<div class="flex">
+										<div class="text-sm">Name</div>
+										<div class="flex-grow" />
+										<div class="text-sm">{transaction.created_by.name}</div>
+									</div>
+									<div class="flex">
+										<div class="flex-[50%] text-sm">Address</div>
+										<div class="flex-[50%] text-sm text-right">
+											<div class="text-sm">{transaction_data.address.name}</div>
+										</div>
+									</div>
+									<div class="flex">
+										<div class="text-sm">Time</div>
+										<div class="flex-grow" />
+										<div class="text-sm">{transaction_data.datetime.name}</div>
+									</div>
+								</section>
+								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+									<div class="flex">
+										<div class="text-base font-semibold">Cleaner</div>
+									</div>
+									<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
+									<div class="flex">
+										<div class="text-sm">Name</div>
+										<div class="flex-grow" />
+										<div class="text-sm">{transaction.related_by.name}</div>
+									</div>
+									<div class="flex">
+										<div class="flex-[50%] text-sm">Address</div>
+										<div class="flex-[50%] text-sm text-right">
+											<div class="text-sm">{transaction.related_by.address ?? '----'}</div>
+										</div>
+									</div>
+								</section>
+								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+									<div class="flex">
+										<div class="text-base font-semibold">Payment Detail</div>
+									</div>
+									<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
+									<div class="flex">
+										<div class="text-sm">Payment Method</div>
+										<div class="flex-grow" />
+										<div class="text-sm">{transaction_data.payment_method.name}</div>
+									</div>
+									<div class="flex">
+										<div class="text-sm">Total Price ({transaction_data.services.length} item)</div>
+										<div class="flex-grow" />
+										<div class="text-sm">
+											Rp. {Currency.toMoney(transaction.cost + '')}
+										</div>
+									</div>
+									<!-- <section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+									<div class="flex">
 										<div class="text-base font-semibold">Delivery</div>
 										<div class="flex-grow" />
-										<div class="badge badge-md badge-info">{sale.delivery.status}</div>
+										<div class="badge badge-md badge-info">{transaction.delivery.status}</div>
 									</div>
 									<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
 									<div class="flex">
 										<div class="text-sm">#ID</div>
 										<div class="flex-grow" />
-										<div class="text-sm">{sale.delivery.id}</div>
+										<div class="text-sm">{transaction.delivery.id}</div>
 									</div>
 									<div class="flex justify-between">
 										<div for="order-sentat" class="text-sm">Sent at</div>
-										<div class="text-sm">{sale.delivery.sentOn}</div>
+										<div class="text-sm">{transaction.delivery.sentOn}</div>
 									</div>
 									<div class="flex justify-between">
 										<div for="order-receiverat" class="text-sm">Receive at</div>
-										<div class="text-sm">{sale.delivery.receiveOn}</div>
+										<div class="text-sm">{transaction.delivery.receiveOn}</div>
 									</div>
 								</section>
 								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
@@ -189,20 +256,20 @@
 										<div class="text-sm">Name</div>
 										<div class="flex-grow" />
 										<div class="text-sm">
-											{sale.delivery.recipient.name}
+											{transaction.delivery.recipient.name}
 										</div>
 									</div>
 									<div class="flex">
 										<div class="text-sm">Telp</div>
 										<div class="flex-grow" />
 										<div class="text-sm">
-											{sale.delivery.recipient.telp}
+											{transaction.delivery.recipient.telp}
 										</div>
 									</div>
 									<div class="flex">
 										<div class="flex-[50%] text-sm">Address</div>
 										<div class="flex-[50%] text-sm text-right">
-											{sale.delivery.recipient.value}
+											{transaction.delivery.recipient.value}
 										</div>
 									</div>
 								</section>
@@ -215,24 +282,24 @@
 										<div class="text-sm">Name</div>
 										<div class="flex-grow" />
 										<div class="text-sm">
-											{sale.delivery.sender.name}
+											{transaction.delivery.sender.name}
 										</div>
 									</div>
 									<div class="flex">
 										<div class="text-sm">Telp</div>
 										<div class="flex-grow" />
 										<div class="text-sm">
-											{sale.delivery.sender.telp}
+											{transaction.delivery.sender.telp}
 										</div>
 									</div>
 									<div class="flex">
 										<div class="flex-[50%] text-sm">Address</div>
 										<div class="flex-[50%] text-sm text-right">
-											{sale.delivery.sender.address}
+											{transaction.delivery.sender.address}
 										</div>
 									</div>
-								</section>
-								{#if sale.delivery.courier}
+								</section> -->
+									<!-- {#if transaction.delivery.courier}
 									<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
 										<div class="flex">
 											<div class="text-base font-semibold">Courier</div>
@@ -243,28 +310,28 @@
 											<div class="text-sm">Name</div>
 											<div class="flex-grow" />
 											<div class="text-sm">
-												{sale.delivery.courier.name}
+												{transaction.delivery.courier.name}
 											</div>
 										</div>
 										<div class="flex">
 											<div class="text-sm">Telp</div>
 											<div class="flex-grow" />
 											<div class="text-sm">
-												{sale.delivery.courier.telp}
+												{transaction.delivery.courier.telp}
 											</div>
 										</div>
 										<div class="flex">
 											<div class="flex-[50%] text-sm">Address</div>
 											<div class="flex-[50%] text-sm text-right">
-												{sale.delivery.courier.address}
+												{transaction.delivery.courier.address}
 											</div>
 										</div>
 										<div class="flex">
 											<div class="flex-[50%] text-sm">Proof</div>
 											<div class="flex-[50%] text-sm flex justify-center">
-												{#if sale.delivery.proofImage}
+												{#if transaction.delivery.proofImage}
 													<img
-														src={sale.delivery.proofImage}
+														src={transaction.delivery.proofImage}
 														alt="Proof Payment"
 														class="object-cover object-center"
 													/>
@@ -294,12 +361,12 @@
 										<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
 										<button type="button" class="btn btn-sm btn-primary">Select Courier</button>
 									</section>
-								{/if}
-								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+								{/if} -->
+									<!-- <section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
 									<div class="flex">
 										<div class="text-base font-semibold">Item</div>
 									</div>
-									{#each sale.item as item}
+									{#each transaction.item as item}
 										<div class="flex gap-4 p-2 border border-black/10 dark:border-white/10 rounded">
 											<img
 												src={item.product.image}
@@ -328,19 +395,19 @@
 										<div class="text-sm">Cash</div>
 									</div>
 									<div class="flex">
-										<div class="text-sm">Total Price ({sale.item.length} item)</div>
+										<div class="text-sm">Total Price ({transaction.item.length} item)</div>
 										<div class="flex-grow" />
 										<div class="text-sm">
-											Rp. {Currency.toMoney(sale.cost + '')}
+											Rp. {Currency.toMoney(transaction.cost + '')}
 										</div>
 									</div>
 									<div class="flex">
 										<div class="text-sm">
-											Total Shipping Cost ({(sale.delivery.range / 1000).toFixed(3)} km)
+											Total Shipping Cost ({(transaction.delivery.range / 1000).toFixed(3)} km)
 										</div>
 										<div class="flex-grow" />
 										<div class="text-sm">
-											Rp. {Currency.toMoney(sale.delivery.cost + '')}
+											Rp. {Currency.toMoney(transaction.delivery.cost + '')}
 										</div>
 									</div>
 									<div class="flex">
@@ -357,17 +424,17 @@
 										<div class="text-sm font-semibold">Total Pay</div>
 										<div class="flex-grow" />
 										<div class="text-sm font-semibold">
-											Rp. {Currency.toMoney(+sale.cost + +sale.delivery.cost)}
+											Rp. {Currency.toMoney(+transaction.cost + +transaction.delivery.cost)}
 										</div>
 									</div>
-								</section>
-								<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
+								</section> -->
+									<!-- <section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
 									<div class="flex">
 										<div class="text-base font-semibold">Rating</div>
 									</div>
 									<hr class="h-[1px] border-0 opacity-10 bg-black dark:bg-white" />
 									<div class="flex justify-center gap-1">
-										{#each Array(5).fill(true, 0, sale.rating?.star ?? 0) as star}
+										{#each Array(5).fill(true, 0, transaction.rating?.star ?? 0) as star}
 											<svg
 												class="w-6 h-6 {star ? 'text-warning fill-current' : ''}"
 												fill="none"
@@ -389,11 +456,12 @@
 										</label>
 										<textarea
 											id="comment"
-											value={sale.rating?.comment ?? ''}
+											value={transaction.rating?.comment ?? ''}
 											readonly
 											class="textarea textarea-bordered"
 										/>
 									</div>
+								</section> -->
 								</section>
 							</div>
 							<div class="flex gap-2">

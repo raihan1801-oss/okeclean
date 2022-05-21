@@ -64,18 +64,18 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		},
 		schema: {},
 	});
-	server.route<{}>({
-		url: `/${api}/slide`,
-		method: 'POST',
-		handler: async (request, reply) => {
-			const user = await request.identify();
-			const file = await request.file();
-			const data = await loadData();
-			console.log(file);
-			reply.ok();
-		},
-		schema: {},
-	});
+	// server.route<{}>({
+	// 	url: `/${api}/slide`,
+	// 	method: 'POST',
+	// 	handler: async (request, reply) => {
+	// 		const user = await request.identify();
+	// 		const file = await request.file();
+	// 		const data = await loadData();
+	// 		console.log(file);
+	// 		reply.ok();
+	// 	},
+	// 	schema: {},
+	// });
 
 	server.route<{
 		Body: {};

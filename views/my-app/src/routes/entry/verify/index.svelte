@@ -30,6 +30,22 @@
 	let alert: Alert;
 	let disableSubmit = true;
 
+	onMount(async () => {
+		try {
+			await user.ready;
+			user_login = await user.api.user.auth();
+			disableSubmit = false;
+		} catch (error: any) {
+			alert.setState("error");
+			alert.setText(error.message);
+
+			disableSubmit = false;
+			alert.show();
+		} finally {
+			loading = false;
+		}
+		// window.addEventListener("beforeunload", reload, { capture: true });
+	});
 	function reset() {
 		pin = Array(6);
 		second = 60;
@@ -106,22 +122,6 @@
 			alert.show();
 		}
 	}
-	onMount(async () => {
-		try {
-			await user.ready;
-			user_login = await user.api.user.auth();
-			disableSubmit = false;
-		} catch (error: any) {
-			alert.setState("error");
-			alert.setText(error.message);
-
-			disableSubmit = false;
-			alert.show();
-		} finally {
-			loading = false;
-		}
-		// window.addEventListener("beforeunload", reload, { capture: true });
-	});
 </script>
 
 <svelte:head>

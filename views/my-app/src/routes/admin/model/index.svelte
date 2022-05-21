@@ -12,7 +12,8 @@
 
 	import { Diff } from '$lib/helper';
 
-	import type { ClientApi, User } from '../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'Model';
 	const desc = 'Model';
@@ -80,7 +81,7 @@
 <section
 	transition:slide
 	data-theme={mode}
-	class="{mode} grid grid-flow-col grid-cols-[2.5fr,9.5fr] bg-base-100"
+	class="{mode} grid grid-flow-col grid-cols-[2.5fr,9.5fr] bg-neutral text-neutral-content"
 >
 	<SideBar />
 	<section class="flex flex-col">

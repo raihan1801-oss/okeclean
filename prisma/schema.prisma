@@ -28,6 +28,9 @@ model User {
 
   created_transaction Transaction[] @relation("created_by")
   related_transaction Transaction[] @relation("related_by")
+
+  chat_node    ChatNode? @relation(fields: [chat_node_id], references: [id])
+  chat_node_id Int?
 }
 
 model Feature {
@@ -49,8 +52,8 @@ model Transaction {
   created_on  DateTime
   finished_on DateTime?
 
-  created_by User  @relation(name: "created_by", fields: [created_by_user], references: [id])
-  related_by User? @relation(name: "related_by", fields: [related_by_user], references: [id])
+  created_by User  @relation(name: "created_by", fields: [created_by_user], references: [id], onDelete: Cascade)
+  related_by User? @relation(name: "related_by", fields: [related_by_user], references: [id], onDelete: Cascade)
 
   created_by_user Int
   related_by_user Int?
@@ -439,6 +442,8 @@ model ChatNode {
   channel         ChatChannel[]
   outgoingMessage ChatMessage[] @relation("sender")
   ingoingMessage  ChatMessage[] @relation("recipient")
+
+  user User[]
 
   internal   Internal[]
   buyer      Buyer[]

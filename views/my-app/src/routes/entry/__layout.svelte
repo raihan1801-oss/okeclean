@@ -17,27 +17,23 @@
 	import Courier from '$apis/courier';
 
 	export interface Context {
-		user: User;
+		customer: User;
+		cleaner: User;
+
 		buyer: Buyer;
 		seller: Seller;
 		courier: Courier;
 	}
 	export type Roles = typeof roles;
 
-	// import logo from '$static/logo.png';
-
-	// export { logo };
-
 	const clientApi = new ClientApi({ base: APIS_URL, version: 'v0-alpha.1' });
 
-	const user = new User(clientApi, new UserStore('buyer', { debug: dev }));
+	const customer = new User(clientApi, new UserStore('customer', { debug: dev }));
+	const cleaner = new User(clientApi, new UserStore('cleaner', { debug: dev }));
 
 	const buyer = new Buyer(clientApi, new UserStore('buyer', { debug: dev }));
 	const seller = new Seller(clientApi, new UserStore('seller', { debug: dev }));
-	const courier = new Courier(
-		clientApi,
-		new UserStore('courier', { debug: dev })
-	);
+	const courier = new Courier(clientApi, new UserStore('courier', { debug: dev })	);
 	const roles = [
 		{
 			name: "Pelanggan",
@@ -52,7 +48,8 @@
 
 <script lang="ts">
 	setContext<Context>('layout', {
-		user,
+		customer,
+		cleaner,
 
 		buyer,
 		seller,
@@ -62,7 +59,8 @@
 	onMount(init);
 	onDestroy(release);
 	function init() {
-		user.init();
+		customer.init();
+		cleaner.init();
 
 		buyer.init();
 		seller.init();

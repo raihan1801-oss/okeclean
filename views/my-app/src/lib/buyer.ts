@@ -83,6 +83,7 @@ export class BuyerClient {
 	constructor(
 		public api: {
 			user: UserApi;
+			cleaner: UserApi;
 			feature: FeatureApi;
 			transaction: TransactionApi;
 
@@ -104,6 +105,7 @@ export class BuyerClient {
 	}
 	public async init() {
 		this.api.user.init();
+		this.api.cleaner.init();
 		this.api.feature.init();
 		this.api.transaction.init();
 

@@ -220,8 +220,8 @@
 }
 @mixin input-default {
 	.s-input__slot {
-		border-radius: 10px;
-		border: var(--primary-color) 2px solid;
+		// border-radius: 10px;
+		// border: var(--primary-color) 2px solid;
 		background-color: white;
 	}
 }

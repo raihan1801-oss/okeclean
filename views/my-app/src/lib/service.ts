@@ -31,7 +31,7 @@ interface RouteUtil {
 	error(): this;
 	redirect(): this;
 }
-interface Task extends RequestUtilOptions, CachetUtilOptions {}
+interface Task extends RequestUtilOptions, CachetUtilOptions { }
 interface Options {
 	debug: boolean;
 	cachename: string;
@@ -197,19 +197,27 @@ export default class Service {
 	}
 
 	public async download() {
-		const cache = await caches.open(this.options.cachename);
-		await cache.addAll(this.options.resources);
-		return context.skipWaiting();
+		try {
+			const cache = await caches.open(this.options.cachename);
+			await cache.addAll(this.options.resources);
+			return context.skipWaiting();
+		} catch (error: any) {
+			this.options.debug && console.error(error);
+		}
 	}
 	public async clean() {
-		const keys = await caches.keys();
-		for (const key of keys) {
-			if (key != this.options.cachename) {
-				await caches.delete(key);
+		try {
+			const keys = await caches.keys();
+			for (const key of keys) {
+				if (key != this.options.cachename) {
+					await caches.delete(key);
+				}
 			}
+			await local.del('cache-util');
+			return context.clients.claim();
+		} catch (error: any) {
+			this.options.debug && console.error(error);
 		}
-		await local.del('cache-util');
-		return context.clients.claim();
 	}
 	public async proxying(request: Request) {
 		const route = this.lookup(request) ?? default_route;
@@ -357,17 +365,18 @@ class RequestUtil {
 				} else {
 					this.retry_count++;
 				}
-				console.log(
-					'[req-util] retrying',
-					this.retry_count,
-					'/',
-					this.options.retry_times,
-					'-',
-					this.options.retry_interval,
-					'/',
-					's',
-					request.url
-				);
+				this.debug &&
+					console.log(
+						'[req-util] retrying',
+						this.retry_count,
+						'/',
+						this.options.retry_times,
+						'-',
+						this.options.retry_interval,
+						'/',
+						's',
+						request.url
+					);
 				try {
 					const response = await this.send(request);
 					this.result.resolver(response);
@@ -389,11 +398,11 @@ class RequestUtil {
 interface CachetUtilOptions {
 	cache_name?: string;
 	strategy:
-		| 'revalidate'
-		| 'net-first'
-		| 'cache-first'
-		| 'net-only'
-		| 'cache-only';
+	| 'revalidate'
+	| 'net-first'
+	| 'cache-first'
+	| 'net-only'
+	| 'cache-only';
 	expire?: number;
 }
 interface CacheExpiration {
@@ -415,7 +424,7 @@ class CacheUtil {
 		ignoreSearch: false,
 		ignoreVary: true,
 	};
-	public not_found = new Response(null, {
+	public not_found = new Response('Not found', {
 		status: 404,
 		statusText: 'Not Found',
 	});
@@ -518,12 +527,8 @@ class CacheUtil {
 			);
 		return this.fetch(request)
 			.then((response) => {
-				if (response.ok) {
-					this.waitPutCache(cache, request, response.clone());
-					return response;
-				} else {
-					return this.cacheOnly(cache, request);
-				}
+				this.waitPutCache(cache, request, response.clone());
+				return response;
 			})
 			.catch((error) => {
 				return this.cacheOnly(cache, request);

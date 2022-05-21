@@ -1,37 +1,31 @@
 <script context="module" lang="ts">
-	import {
-		MaterialAppMin,
-		AppBar,
-		Button,
-		Icon,
-		Select,
-		TextField,
-	} from "svelte-materialify/src";
-	import ProgressLinear from "$components/progress-linear.svelte";
-	import Alert from "$components/alert.svelte";
-	import { mdiChevronLeft, mdiEye, mdiEyeOff } from "@mdi/js";
+	import { MaterialAppMin, AppBar, Button, Icon, Select, TextField } from 'svelte-materialify/src';
+	import ProgressLinear from '$components/progress-linear.svelte';
+	import Alert from '$components/alert.svelte';
+	import { mdiChevronLeft, mdiEye, mdiEyeOff } from '@mdi/js';
 
-	import { onMount, onDestroy, getContext } from "svelte";
-	import { fade } from "svelte/transition";
-	import { session } from "$app/stores";
-	import { goto } from "$app/navigation";
+	import { onMount, onDestroy, getContext } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { wait } from '$lib/helper';
 
-	import * as rules from "$lib/rules";
+	import * as rules from '$lib/rules';
 
-	import type { Context, Roles } from "./__layout.svelte";
-	import type { ObserverUnsafe } from "$lib/helper";
+	import type { Context, Roles } from './__layout.svelte';
+	import type { ObserverUnsafe } from '$lib/helper';
 </script>
 
 <script lang="ts">
-	const user = getContext<Context>("layout");
-	const roles = getContext<Roles>("roles");
-	const is_desktop = getContext<ObserverUnsafe<boolean>>("is_desktop");
+	const user = getContext<Context>('layout');
+	const roles = getContext<Roles>('roles');
+	const is_desktop = getContext<ObserverUnsafe<boolean>>('is_desktop');
 	let alert: Alert;
 	let loader: ProgressLinear;
-	let email = "";
-	let name = "";
-	let password = "";
-	let role = "customer";
+	let email = '';
+	let name = '';
+	let password = '';
+	let role = 'customer';
 	let showPassword = false;
 	let disableSubmit = false;
 
@@ -48,26 +42,37 @@
 			alert.hide();
 			disableSubmit = true;
 
-			await user.user.register({
-				email,
-				name,
-				password,
-				role,
-			});
+			if (role == 'customer') {
+				await user.customer.register({
+					email,
+					name,
+					password,
+					role
+				});
+			} else if (role == 'cleaner') {
+				await user.cleaner.register({
+					email,
+					name,
+					password,
+					role
+				});
+			} else {
+				throw new Error('Unknown Role');
+			}
 
-			alert.setState("success");
-			alert.setText("Berhasil mendaftar");
+			alert.setState('success');
+			alert.setText('Berhasil mendaftar');
 			alert.show();
 
-			await loader.sequencing();
+			await wait({ timeout: 1000 });
 
 			if (role == 'customer') {
-				goto("/entry/verify", { replaceState: true });
+				goto('/entry/verify', { replaceState: true });
 			} else {
-				goto("/cleaner", { replaceState: true });
+				goto('/cleaner', { replaceState: true });
 			}
 		} catch (error: any) {
-			alert.setState("error");
+			alert.setState('error');
 			alert.setText(error.message);
 			alert.show();
 
@@ -96,7 +101,7 @@
 		<main>
 			{#if $is_desktop}
 				<header transition:fade class="title">
-					<img class="logo" src="logo.png" alt="ada ikan" height="64" />
+					<img class="logo" src="/logo.png" alt="oke clean" height="64" />
 					<span>Oke Clean</span>
 				</header>
 			{/if}
@@ -104,18 +109,12 @@
 			<form
 				autocomplete="on"
 				on:submit|preventDefault={submit}
-				class={$is_desktop ? "card p-32" : ""}
+				class={$is_desktop ? 'card p-32' : ''}
 			>
 				<fieldset>
 					<div class="title">
 						{#if !$is_desktop}
-							<img
-								transition:fade
-								class="logo"
-								src="logo.png"
-								alt="ada ikan"
-								height="64"
-							/>
+							<img transition:fade class="logo" src="/logo.png" alt="oke clean" height="64" />
 							<span transition:fade>Mendaftar</span>
 						{:else}
 							<span class="f-18 f-500">Mendaftar</span>
@@ -126,71 +125,44 @@
 					</div>
 					<div class="content">
 						<div class="text-set">
-							<Select
-								bind:value={role}
-								items={roles}
-								class="textfield"
-								placeholder={$is_desktop ? "" : "Sebagai"}
-								solo={!$is_desktop}
-								outlined={$is_desktop}
-								required
-							>
-								{#if $is_desktop}
-									Sebagai
-								{/if}
+							<Select bind:value={role} items={roles} class="textfield" outlined required>
+								Sebagai
 							</Select>
-							<!-- <label for="email">Email</label> -->
 							<TextField
 								class="textfield"
 								bind:value={email}
-								placeholder={$is_desktop ? "" : "Email"}
-								solo={!$is_desktop}
-								outlined={$is_desktop}
+								outlined
 								rules={rules.email}
 								autocomplete="email"
 								type="email"
 								required
 							>
-								{#if $is_desktop}
-									Email
-								{/if}
+								Email
 							</TextField>
 						</div>
 						<div class="text-set">
-							<!-- <label for="email">Username</label> -->
 							<TextField
 								class="textfield"
 								bind:value={name}
-								placeholder={$is_desktop ? "" : "Username"}
-								solo={!$is_desktop}
-								outlined={$is_desktop}
+								outlined
 								rules={rules.username}
 								autocomplete="username"
 								required
 							>
-								{#if $is_desktop}
-									Username
-								{/if}
+								Username
 							</TextField>
 						</div>
 						<div class="text-set">
-							<!-- <label for="email">Password</label> -->
 							<TextField
 								class="textfield"
 								bind:value={password}
-								placeholder={$is_desktop ? "" : "Password"}
-								solo={!$is_desktop}
-								outlined={$is_desktop}
+								outlined
 								rules={rules.password}
-								type={showPassword ? "text" : "password"}
+								type={showPassword ? 'text' : 'password'}
 								autocomplete="new-password"
 								required
 							>
-								<div>
-									{#if $is_desktop}
-										Password
-									{/if}
-								</div>
+								<div>Password</div>
 								<div slot="append">
 									<Button
 										fab
@@ -210,25 +182,15 @@
 							</TextField>
 						</div>
 						<div class="skb">
-							<p>
-								Saya menyetujui syarat dan ketentuan berlaku dengan mendaftar
-							</p>
+							<p>Saya menyetujui syarat dan ketentuan berlaku dengan mendaftar</p>
 							<p><a href="?">Lihat syarat dan ketentuan</a></p>
 						</div>
 					</div>
 					<div class="btns">
-						<Button
-							class="btn"
-							type="submit"
-							size="large"
-							disabled={disableSubmit}>Daftar</Button
-						>
+						<Button class="btn" type="submit" size="large" disabled={disableSubmit}>Daftar</Button>
 						<div class="t-center black-text">
 							<div class="f-14 f-500">Punya Akun?</div>
-							<a
-								class={$is_desktop ? "primary-text" : "white-text"}
-								href="/entry/login"
-							>
+							<a class={$is_desktop ? 'primary-text' : 'white-text'} href="/entry/login">
 								Log in
 							</a>
 						</div>
@@ -240,8 +202,8 @@
 </div>
 
 <style lang="scss">
-	@import "../../components/common";
-	@import "../../components/elevation";
+	@import '../../components/common';
+	@import '../../components/elevation';
 	.card {
 		@include elevation;
 		border-radius: 6px;

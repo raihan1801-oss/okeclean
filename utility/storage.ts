@@ -97,6 +97,9 @@ export class FileStorage {
 			try {
 				if (_path.extname(abs_dir)) {
 					await fs.rm(abs_dir);
+					// if (await fs.pathExists(abs_dir)) {
+					// 	await fs.rm(abs_dir);
+					// }
 				} else {
 					await fs.rm(abs_dir, { recursive: true });
 				}

@@ -3,8 +3,13 @@
     MaterialAppMin,
     Footer,
     Button,
+    ListItem,
+    List,
+    Icon,
+    Menu,
     Radio,
   } from "svelte-materialify/src";
+	import { mdiChevronLeft, mdiMessageTextOutline } from '@mdi/js';
   import CartCard from "$components/cart-card.svelte";
   import Snackbar from "$components/snackbar.svelte";
   import UserUnauthDialog from "$components/user-unauth-dialog.svelte";
@@ -40,6 +45,7 @@
   let items: (BuyerClient.SelectedItem & {
     product: BuyerClient.Product & { store: BuyerClient.Store };
   })[] = [];
+	let contact: { name: string; telp: string; node: number }[] = [];
   let procedure: BuyerClient.Business;
   let progress: ProgressLinear;
   let fakeItems = Array(4);
@@ -65,6 +71,13 @@
       user_login = await client.api.user.auth();
       order = await client.api.transaction.get({ id });
       order_data = order.data;
+      contact = [
+				{
+					name: 'Pembersih',
+					telp: order.related_by?.telp ?? "",
+					node: order.related_by?.chat_node_id ?? 0,
+				},
+			];
       disableSubmit = false;
     } catch (error: any) {
       if (error.type == client.api.buyer.api.Error.FailedAuthentication.type) {
@@ -157,8 +170,32 @@
               </section>
             </section>
           </section>
-          <!-- <section class="section pad card btns">
-            <Button
+          <section class="section pad card btns">
+            <Menu closeOnClick closeOnClickOutside openOnClick bottom>
+              <div slot="activator">
+                <Button class="" fab text size="small">
+                  <Icon path="{mdiMessageTextOutline}" />
+                </Button>
+              </div>
+              <List>
+                {#each contact as item}
+                  <ListItem
+                    on:click="{() => {
+                      if (item.node) {
+                        goto('/chat?connectTo=' + item.node);
+                      } else {
+                        snackbar.setText("chat node empty");
+                        snackbar.show();
+                      }
+                    }}"
+                  >
+                    <div>{item.name}</div>
+                    <div slot="subtitle">{item.telp}</div>
+                  </ListItem>
+                {/each}
+              </List>
+            </Menu>
+            <!-- <Button
               type="submit"
               size="large"
               class="primary-color"
@@ -169,8 +206,8 @@
               size="large"
               class="error-color"
               on:click={() => goto("/")}>Batal</Button
-            >
-          </section> -->
+            > -->
+          </section>
         {:else}
           <section class="section pad card">
             {#each Array(4) as item}
@@ -281,6 +318,7 @@
   .btns {
     display: grid;
     grid-auto-flow: column;
+    grid-template-columns: auto 1fr 1fr;
     gap: 16px;
   }
   * :global {

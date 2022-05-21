@@ -10,8 +10,6 @@
 		mdiClockOutline,
 	} from '@mdi/js';
 
-	// import logo from '$static/logo.png';
-
 	import { LANDING_URL } from '$lib/env';
 
 	import { page } from '$app/stores';
@@ -22,10 +20,10 @@
 <script lang="ts">
 	export let desktop = false;
 	const footer_navigation = [
-		{ name: 'Tentang Ada Ikan', link: `${LANDING_URL}#about` },
+		{ name: 'Tentang Oke Clean', link: `${LANDING_URL}#about` },
 		{ name: 'Fitur', link:  `${LANDING_URL}#features` },
 		{ name: 'Cara Kerja', link:  `${LANDING_URL}#how_work` },
-		{ name: 'Tim Pengembang', link:  `${LANDING_URL}#team` },
+		// { name: 'Tim Pengembang', link:  `${LANDING_URL}#team` },
 	];
 	const media_social = [
 		{
@@ -170,13 +168,11 @@
 	<div class="{desktop ? 'column' : 'list'}">
 		<div class="about">
 			<div class="logo">
-				<img src="logo.png" alt="Ada Ikan" width="48" height="48" />
-				<div class="name">Ada Ikan</div>
+				<img style="object-fit: contain; object-position: center;" src="/logo.png" alt="Oke Clean" width="48" height="48" />
+				<div class="name">Oke Clean</div>
 			</div>
 			<p>
-				Ada Ikan adalah sebuah website yang dibuat oleh team Arwana Start Up
-				untuk mempermudah masyarakat dalam mencari dan membeli ikan dengan
-				menghubungkan pembeli dan penjual ikan
+				Oke Clean adalah aplikasi pembersihan umum yang mempermudah pekerjaan seseorang yang sibuk dengan karirnya dan tidak sempat mengurus kebersihan tempat huniannya.
 			</p>
 		</div>
 		<div class="link">
@@ -216,8 +212,7 @@
 			<address>
 				<div>Kantor</div>
 				<div>
-					(Perumahan Graha Lestari, Jl. Tun Abdul Razak, Hertasning Baru, Kec.
-					Manggala, Kota Makassar, Sulawesi Selatan 90233)
+					Jl. Cendrawasih No. 332/264 (Kota Makassar).
 				</div>
 			</address>
 		</div>
@@ -230,7 +225,7 @@
 		</div>
 	</div>
 	<div class="copy">
-		<p>Copyright &copy; 2021 Ada Ikan - Arwana, All Right Reserved.</p>
+		<p>Copyright &copy; 2022 Oke Clean, All Right Reserved.</p>
 	</div>
 </footer>
 

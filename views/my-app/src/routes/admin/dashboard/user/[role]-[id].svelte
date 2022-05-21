@@ -15,7 +15,8 @@
 	import { page } from '$app/stores';
 	import { Diff, wait } from '$lib/helper';
 
-	import type { ClientApi, User } from '../../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'User';
 	const desc = '';
@@ -32,18 +33,19 @@
 
 	let role = $page.params.role;
 	let id = +$page.params.id;
-	let profile: ClientApi.Admin.User;
+	let profile: ClientApi.User | undefined;
 	let copy: any = {};
 	let file: File | undefined;
-	let disable = true;
+	let disable_save = true;
+	let disable_delete = false;
 
 	$: {
 		if (profile) {
 			const changed = Diff.object(copy, profile);
 			if (changed) {
-				disable = false;
+				disable_save = false;
 			} else {
-				disable = true;
+				disable_save = true;
 			}
 		}
 	}
@@ -53,7 +55,7 @@
 	async function init() {
 		try {
 			await client.ready;
-			profile = await client.admin.user(role, id);
+			profile = await client.user.get({ id });
 			copy = Diff.objectCopy(profile);
 		} catch (error: any) {
 		} finally {
@@ -69,47 +71,41 @@
 	async function save() {
 		try {
 			progress.showing();
-			disable = true;
+			disable_save = disable_delete = true;
 
 			if (!profile) throw new Error('');
 
 			const changed = Diff.object(copy, profile);
 
 			if (changed) {
-				if (role == 'buyer') {
-					if (changed.image && file) {
-						changed.image = await client.buyer.uploadImage(`${id}/${file.name}`, file);
-						await client.buyer.update({
-							where: { id },
-							data: {
-								image: changed.image
-							}
-						});
-					}
-				} else if (role == 'seller') {
-					if (changed.image && file) {
-						changed.image = await client.store.uploadImage(`${id}/${file.name}`, file);
-						await client.store.update({
-							where: { id },
-							data: {
-								image: changed.image
-							}
-						});
-					}
-				} else if (role == 'courier') {
-					if (changed.image && file) {
-						changed.image = await client.courier.uploadImage(`${id}/${file.name}`, file);
-						await client.courier.update({
-							where: { id },
-							data: {
-								image: changed.image
-							}
-						});
-					}
+				if (changed.image && file) {
+					changed.image = await client.user.uploadImage(`${id}/${file.name}`, file);
+					await client.user.update({
+						where: { id },
+						data: { ...changed }
+					});
 				}
 			}
 		} catch (error: any) {
-			disable = false;
+			disable_save = false;
+		} finally {
+			progress.hiding();
+		}
+	}
+	async function remove() {
+		try {
+			progress.showing();
+			disable_save = disable_delete = true;
+
+			if (!profile) throw new Error('');
+
+			await client.user.delete({ id: profile.id });
+
+			profile = undefined;
+
+			history.back();
+		} catch (error: any) {
+			disable_delete = false;
 		} finally {
 			progress.hiding();
 		}
@@ -128,7 +124,7 @@
 	<meta name="description" content={desc} />
 </svelte:head>
 
-<Page {mode} class="text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-900">
+<Page {mode} class="bg-neutral text-neutral-content">
 	<section transition:slide class="flex">
 		<Drawer show={drawerOpened} class="bg-base-100">
 			<DrawerContent />
@@ -161,7 +157,7 @@
 											{#if profile.image}
 												<img
 													src={profile.image}
-													alt={profile.username}
+													alt={profile.name}
 													class="object-cover object-center"
 												/>
 											{:else}
@@ -190,7 +186,7 @@
 										<span class="label-text">Username</span>
 									</label>
 									<input
-										bind:value={profile.username}
+										bind:value={profile.name}
 										id="username"
 										type="text"
 										autocomplete="username"
@@ -224,12 +220,26 @@
 										class="input input-ghost bg-base-200 hover:ring-2 hover:ring-primary hover:ring-offset-2 ring-offset-base-100"
 									/>
 								</div>
+								<div class="form-control">
+									<label class="label cursor-pointer">
+										<span class="label-text">Verified</span>
+										<input type="checkbox" class="toggle" bind:checked={profile.verified} />
+									</label>
+								</div>
 							</div>
-							<button
-								type="submit"
-								disabled={disable}
-								class="btn btn-primary {disable ? 'btn-disabled' : ''}">Save</button
-							>
+							<div class="grid grid-flow-col gap-4">
+								<button
+									type="submit"
+									disabled={disable_save}
+									class="btn btn-primary {disable_save ? 'btn-disabled' : ''}">Save</button
+								>
+								<button
+									type="button"
+									disabled={disable_delete}
+									class="btn btn-error {disable_delete ? 'btn-disabled' : ''}"
+									on:click={remove}>Delete</button
+								>
+							</div>
 						</div>
 					{:else}
 						<div class="grid gap-12 w-[320px] justify-self-center">
@@ -265,8 +275,8 @@
 							</div>
 							<button
 								type="submit"
-								disabled={disable}
-								class="btn btn-primary {disable ? 'btn-disabled' : ''}">Save</button
+								disabled={disable_save}
+								class="btn btn-primary {disable_save ? 'btn-disabled' : ''}">Save</button
 							>
 						</div>
 					{/if}

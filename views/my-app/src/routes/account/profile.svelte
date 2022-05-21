@@ -9,22 +9,23 @@
 		ListItem,
 		Card,
 		TextField,
-		Dialog,
-	} from "svelte-materialify/src";
+		Dialog
+	} from 'svelte-materialify/src';
+	import { mdiChevronLeft, mdiImagePlus, mdiCameraOutline, mdiImageOutline } from '@mdi/js';
+
+	import { onMount, onDestroy, getContext } from 'svelte';
+	import { derived, writable } from 'svelte/store';
+	import { fade, slide } from 'svelte/transition';
 	import {
-		mdiChevronLeft,
-		mdiImagePlus,
-		mdiCameraOutline,
-		mdiImageOutline,
-	} from "@mdi/js";
+		wait,
+		Diff,
+		unsafeDuplicate,
+		element_support,
+		ProcessManagementUnsafe
+	} from '$lib/helper';
+	import * as rules from '$lib/rules';
 
-	import { onMount, onDestroy, getContext } from "svelte";
-	import { derived, writable } from "svelte/store";
-	import { fade, slide } from "svelte/transition";
-	import { wait, Diff, unsafeDuplicate, element_support } from "$lib/helper";
-	import * as rules from "$lib/rules";
-
-	import type { BuyerClient } from "../__layout.svelte";
+	import type { BuyerClient } from '../__layout.svelte';
 
 	const showProgress = writable(true);
 	const progress = writable(0);
@@ -32,13 +33,14 @@
 </script>
 
 <script lang="ts">
-	const client = getContext<BuyerClient>("buyer");
+	const client = getContext<BuyerClient>('buyer');
+	const proccess = new ProcessManagementUnsafe();
 	// let profile = writable(buyer.get());
 	let user_login: BuyerClient.User;
 	let cached = {};
 	let show_pick_image = false;
 	let support_image_capture = false;
-	let imageUrl = "";
+	let imageUrl = '';
 	let image: File | undefined;
 	let isSubmitDisable = true;
 	$: diff(user_login);
@@ -62,8 +64,8 @@
 			// 		isSubmitDisable = true;
 			// 	}
 			// });
-			imageUrl = user_login.image ?? "";
-			support_image_capture = element_support("input", "capture");
+			imageUrl = user_login.image ?? '';
+			support_image_capture = element_support('input', 'capture');
 		} catch (error: any) {
 		} finally {
 			loaded();
@@ -84,16 +86,20 @@
 		try {
 			loading();
 			isSubmitDisable = true;
-
 			if (!user_login) return;
-
+			proccess.start();
+			await proccess.sleeped;
 			const changed = Diff.object(cached, user_login);
-
 			if (changed) {
-				// const result = await buyer.update(changed, image);
-				// buyer.set(result);
+				client.api.user.update({
+					where: {
+						id: user_login.id
+					},
+					data: changed
+				});
 				Object.assign(cached, changed);
 			}
+			proccess.finish();
 		} catch (error: any) {
 			console.error(error);
 		} finally {
@@ -116,7 +122,15 @@
 			show_pick_image = false;
 			image = file;
 			user_login.image = file.name;
+			user_login = user_login;
 			imageUrl = URL.createObjectURL(file);
+			proccess.queue({ user_login, image }, async ({ user_login, image }) => {
+				user_login.image = await client.api.user.uploadImage(
+					`${user_login.id}/${image.name}`,
+					image
+				);
+				user_login = user_login;
+			});
 		}
 	}
 </script>
@@ -154,10 +168,7 @@
 							{:else}
 								<Icon size={56} path={mdiImagePlus} />
 							{/if}
-							<button
-								type="button"
-								on:click={() => (show_pick_image = !show_pick_image)}
-							/>
+							<button type="button" on:click={() => (show_pick_image = !show_pick_image)} />
 						</div>
 					</Card>
 					<br />
@@ -195,7 +206,7 @@
 					>
 					<TextField
 						class="textfield"
-						value={user_login.address?.name ?? "----"}
+						value={user_login.address?.name ?? '----'}
 						placeholder="-"
 						readonly
 						outlined>Alamat</TextField
@@ -222,7 +233,7 @@
 			<br />
 			<section class="btn">
 				<Button
-					class={isSubmitDisable ? "" : "primary-color"}
+					class={isSubmitDisable ? '' : 'primary-color'}
 					type="submit"
 					form="profile"
 					disabled={isSubmitDisable}>Simpan</Button
@@ -236,12 +247,7 @@
 					<div slot="prepend">
 						<Icon path={mdiImageOutline} />
 					</div>
-					<input
-						class="input-file"
-						type="file"
-						accept="image/*"
-						on:input={inputFile}
-					/>
+					<input class="input-file" type="file" accept="image/*" on:input={inputFile} />
 				</ListItem>
 				{#if support_image_capture}
 					<ListItem>
@@ -249,13 +255,7 @@
 						<div slot="prepend">
 							<Icon path={mdiCameraOutline} />
 						</div>
-						<input
-							class="input-file"
-							type="file"
-							accept="image/*"
-							capture
-							on:input={inputFile}
-						/>
+						<input class="input-file" type="file" accept="image/*" capture on:input={inputFile} />
 					</ListItem>
 				{/if}
 			</List>
@@ -264,8 +264,8 @@
 </div>
 
 <style lang="scss">
-	@import "../../components/common";
-	@import "../../components/skeleton";
+	@import '../../components/common';
+	@import '../../components/skeleton';
 	.loading {
 		@include loading-sekeleton;
 	}

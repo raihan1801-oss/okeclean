@@ -11,7 +11,7 @@ interface Plugin extends FastifyPluginAsync<Options> {}
 
 const name = 'image';
 const plugin: Plugin = async (server, opts) => {
-	server.addContentTypeParser(['image/jpeg', 'image/png', 'image/webp'], async function (request, payload, done) {
+	server.addContentTypeParser(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'], async function (request, payload, done) {
 		return null;
 	});
 };

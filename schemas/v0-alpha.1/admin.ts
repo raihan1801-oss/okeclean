@@ -29,7 +29,7 @@ export type Stat = {
 	user: number;
 	order: number;
 	// product: number;
-	sales: string;
+	sales: number;
 	// subscriber: number;
 };
 export type SentEvent<D = any> = {

@@ -13,6 +13,7 @@ import type {
 } from 'project/global';
 
 import type { Stat, Data, User, Slide } from 'schemas/v0-alpha.1/admin';
+// @ts-ignore
 import type { Multipart, MultipartFields } from 'fastify-multipart';
 
 import { spawn, ChildProcess } from 'child_process';
@@ -113,7 +114,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 	sse.route({
 		path: `/${api}`,
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			modelEvent.on('change', listener);
 			reply.once('close', () => modelEvent.removeListener('change', listener));
 			function listener(arg: any) {
@@ -126,7 +127,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/stat`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			// const user = await request.identify('internal');
+			// const user = await request.identify('admin');
 			// const buyer = await orm.buyer.count();
 			// const seller = await orm.seller.count();
 			// const courier = await orm.courier.count();
@@ -150,7 +151,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 			// 		status: 'Done',
 			// 	},
 			// });
-			let sales = '0';
+			let sales = 0;
 			for (const order of orders) {
 				if (order.status == "finish") {
 					sales += order.cost.toNumber();
@@ -169,7 +170,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/business`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const data = await data_store.load();
 			reply.ok(data.business);
 		},
@@ -182,7 +183,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/business`,
 		method: 'PATCH',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const data = await data_store.load();
 			data.business = request.body;
 			await data_store.save();
@@ -195,7 +196,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/model`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const data = await data_store.load();
 			reply.ok(data.model);
 		},
@@ -208,8 +209,8 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/model`,
 		method: 'PATCH',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
-			const result = await orm.internal.findUnique({
+			const user = await request.identify('admin');
+			const result = await orm.user.findUnique({
 				where: { id: user.sub },
 			});
 			if (!result) {
@@ -225,7 +226,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 				child.on('spawn', async () => {
 					data.model.open = true;
 					data.model.link = MODEL_URL;
-					data.model.openBy = result.username;
+					data.model.openBy = result.name;
 					data.model.openAt = new Date().toISOString();
 
 					await data_store.save();
@@ -260,7 +261,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/slide`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const data = await data_store.load();
 			reply.ok(data.slides);
 		},
@@ -272,7 +273,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 	// 	url: `/${api}/slide`,
 	// 	method: 'PATCH',
 	// 	handler: async (request, reply) => {
-	// 		const user = await request.identify('internal');
+	// 		const user = await request.identify('admin');
 	// 		const data = await data_store.load();
 
 	// 		for (const slide of data.slides) {
@@ -296,7 +297,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 	// 	url: `/${api}/slide/image`,
 	// 	method: 'POST',
 	// 	handler: async (request, reply) => {
-	// 		const user = await request.identify('internal');
+	// 		const user = await request.identify('admin');
 	// 		const data = await data_store.load();
 
 	// 		for await (const part of request.files()) {
@@ -328,7 +329,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/user/:role-:id`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const users: User[] = [];
 			const { role, id } = request.params;
 			if (role == 'buyer') {
@@ -387,7 +388,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/user`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const buyers = await orm.buyer.findMany({
 				include: { address: { take: 1, where: { selected: true } } },
 			});
@@ -442,7 +443,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/product/:id`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const products = await orm.product.findFirst({
 				where: { id: +request.params.id },
 				include: { store: true },
@@ -456,7 +457,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/product`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const products = await orm.product.findMany({ include: { store: true } });
 			reply.ok(products);
 		},
@@ -469,7 +470,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/order/:id`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const order = await orm.order.findFirst({
 				where: { id: +request.params.id },
 				include: {
@@ -492,7 +493,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/order`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const orders = await orm.order.findMany({
 				include: {
 					item: { include: { product: true } },
@@ -510,7 +511,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/sales/:id`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const sale = await orm.order.findFirst({
 				where: { AND: [{ status: 'Done' }, { id: +request.params.id }] },
 				include: {
@@ -535,7 +536,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/sales`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const sales = await orm.order.findMany({
 				where: { status: 'Done' },
 				include: {
@@ -555,7 +556,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/subscribers`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const subscribers = await orm.subscriber.findMany();
 			reply.ok(subscribers);
 		},
@@ -567,7 +568,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/unsubscribe/:id`,
 		method: 'DELETE',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const subscriber = await orm.subscriber.delete({
 				where: { id: +request.params.id },
 			});
@@ -580,7 +581,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 	sse.route({
 		path: `/${api}/log`,
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const dir = path.join(SERVER_LOGS_DIR, 'server.log');
 			const buffer = await fs.readFile(dir);
 
@@ -612,7 +613,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/log`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			reply.send(fs.createReadStream(path.join(SERVER_LOGS_DIR, 'server.log')));
 		},
 		schema: {},
@@ -621,7 +622,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/log`,
 		method: 'DELETE',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			await fs.writeFile(path.join(SERVER_LOGS_DIR, 'server.log'), '');
 			reply.ok(true);
 		},
@@ -634,7 +635,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/folder`,
 		method: 'GET',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const tree = await file_storage.dir_tree(
 				SERVER_PUBLIC_DIR,
 				SERVER_STATIC_PATH
@@ -649,7 +650,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/folder/public/*`,
 		method: 'POST',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const dir_file = await file_storage.save_file(request.raw, {
 				path: request.params['*'],
 				href: SERVER_STATIC_PATH,
@@ -665,7 +666,7 @@ const route: FastifyPluginAsync = async (server, opts) => {
 		url: `/${api}/folder/public/*`,
 		method: 'DELETE',
 		handler: async (request, reply) => {
-			const user = await request.identify('internal');
+			const user = await request.identify('admin');
 			const result = await file_storage.remove_file(request.params['*']);
 			reply.ok(result);
 		},

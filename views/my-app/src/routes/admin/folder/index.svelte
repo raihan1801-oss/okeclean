@@ -17,7 +17,8 @@
 
 	import { goto } from '$app/navigation';
 
-	import type { ClientApi, User } from '../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'Folder';
 	const desc = '';
@@ -53,7 +54,7 @@
 
 			account = {
 				image: user_login.image ?? '',
-				name: user_login.username,
+				name: user_login.name,
 				role: user_login.role
 			};
 
@@ -169,7 +170,7 @@
 	<meta name="description" content={desc} />
 </svelte:head>
 
-<Page {mode} class="text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-900">
+<Page {mode} class="bg-neutral text-neutral-content">
 	<section transition:fade class="flex">
 		<Drawer min_width={false} show={drawerOpened} class="bg-base-100 w-[300px]">
 			<DrawerContent />

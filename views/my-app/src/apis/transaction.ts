@@ -58,7 +58,6 @@ export default class InternalClientApi {
         body: data,
 			})
 			.send<GetReturn>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
   public async get_all() {
@@ -68,7 +67,6 @@ export default class InternalClientApi {
 				method: 'GET',
 			})
 			.send<Data[]>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
 	public async get_all_by(param: GetAllByParam) {
@@ -79,7 +77,6 @@ export default class InternalClientApi {
 				body: param,
 			})
 			.send<Data[]>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
 	public async create(data: CreateParam) {
@@ -90,7 +87,6 @@ export default class InternalClientApi {
 				body: data,
 			})
 			.send<Data>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
 	public async assign(data: AssignParam) {
@@ -101,7 +97,6 @@ export default class InternalClientApi {
 				body: data,
 			})
 			.send<Data>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
 	public async cancel(data: CancelParam) {
@@ -112,7 +107,6 @@ export default class InternalClientApi {
 				body: data,
 			})
 			.send<Data>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
 	public async finish(data: FinishParam) {
@@ -123,7 +117,6 @@ export default class InternalClientApi {
 				body: data,
 			})
 			.send<Data>();
-		await this.setToken(response.raw);
 		return response.read();
 	}
 

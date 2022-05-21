@@ -77,7 +77,7 @@
   async function init() {
     try {
       await client.ready;
-      user_login = await client.api.user.auth();
+      user_login = await client.api.cleaner.auth();
       transactions = (await client.api.transaction.get_all_by({
         id: user_login.id,
         by: "cleaner",

@@ -15,7 +15,8 @@
 	import ListItem from '$components/list-item.svelte';
 	import Avatar from '$components/avatar.svelte';
 
-	import type { ClientApi, User } from '../../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'Total Users';
 	const desc = '';
@@ -31,14 +32,14 @@
 	let progress: Progress;
 
 	let fake = Array(6);
-	let users: ClientApi.Admin.User[] = [];
+	let users: ClientApi.User[] = [];
 
 	onMount(init);
 
 	async function init() {
 		try {
 			await client.ready;
-			users = await client.admin.users();
+			users = await client.user.get_all();
 			fake = Array(0);
 		} catch (error: any) {
 		} finally {
@@ -58,7 +59,7 @@
 	<meta name="description" content={desc} />
 </svelte:head>
 
-<Page {mode} class="text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-900">
+<Page {mode} class="bg-neutral text-neutral-content">
 	<section transition:slide class="flex">
 		<Drawer show={drawerOpened} class="bg-base-100">
 			<DrawerContent />
@@ -80,7 +81,7 @@
 								class="flex items-center gap-4 p-2 bg-base-100 rounded-md hover:bg-primary active:bg-secondary transition"
 							>
 								<Avatar
-									account={{ image: user.image, title: user.username, subtitle: user.role }}
+									account={{ image: user.image, title: user.name, subtitle: user.role }}
 									class="flex-[20%]"
 								/>
 								<div class="flex flex-[20%] flex-col justify-evenly">
@@ -88,7 +89,7 @@
 									<div class="text-sm">{user.telp ?? '---'}</div>
 								</div>
 								<div class="flex-[40%]">
-									<div class="trunc">{user.address ?? '---'}</div>
+									<div class="trunc">{user.address?.name ?? '---'}</div>
 								</div>
 							</a>
 						</ListItem>

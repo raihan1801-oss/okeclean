@@ -179,7 +179,7 @@ class ClientRequestApi<Body = BodyInit | null> {
 			return body;
 		} else if (body instanceof ReadableStream) {
 			return body;
-		} else {
+		} else if (body) {
 			headers.append('Content-Type', 'application/json;charset=UTF-8');
 			return JSON.stringify(body);
 		}

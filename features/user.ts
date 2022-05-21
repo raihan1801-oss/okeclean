@@ -40,6 +40,7 @@ import type {
   VerifyOTP,
   Subscribe,
   Unsubscribe,
+  GetParam,
 } from 'schemas/v0-alpha.1/user';
 
 export default class UserFeature {
@@ -133,4 +134,14 @@ export default class UserFeature {
   }
   public async subscribe(data: Subscribe) {}
   public async unsubscribe(data: Unsubscribe) {}
+  public async get(data: GetParam) {
+    return this.model.search({
+      where: {
+        id: data.id,
+      }
+    })
+  }
+  public async get_all() {
+    return this.model.searchMany({});
+  }
 }

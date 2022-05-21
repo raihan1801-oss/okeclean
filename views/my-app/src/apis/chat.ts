@@ -12,7 +12,7 @@ import type {
 	ChatReceiveFormat,
 	ChatSendFormat,
 	Message,
-	SendMessage,
+	// SendMessage,
 } from '$server/schemas/v0-alpha.1/chat';
 export type {
 	Channel,
@@ -25,7 +25,7 @@ export type {
 	ChatReceiveFormat,
 	ChatSendFormat,
 	Message,
-	SendMessage,
+	// SendMessage,
 };
 export type Contact = ChatNode.Data;
 export default class ChatClientApi {
@@ -121,6 +121,7 @@ class WSChat {
 		await this.clientWS.opened;
 
 		this.clientWS.send(
+			"connect",
 			this.serialize<ChatSendFormat>({
 				tag: 'connect',
 				data: node,

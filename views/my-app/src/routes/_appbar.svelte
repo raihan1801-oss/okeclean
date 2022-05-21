@@ -7,8 +7,6 @@
 	import { LANDING_URL } from "$lib/env";
 
 	import { page } from "$app/stores";
-
-	// import logo from "$static/logo_text.png";
 </script>
 
 <script lang="ts">
@@ -38,7 +36,7 @@
 			</Button>
 		{:else}
 			<a transition:fade href="/" class="logo">
-				<img src="logo.png" alt="Ada Ikan" height="44" />
+				<img src="/logo_text.png" alt="Logo" height="44" />
 			</a>
 		{/if}
 	</div>
@@ -53,7 +51,7 @@
 			outlined
 			flat
 			clearable
-			placeholder="Cari Ikan..."
+			placeholder="Cari..."
 		>
 			<Button slot="prepend" icon class="grey-text text-darken-4">
 				<Icon path={mdiMagnify} />

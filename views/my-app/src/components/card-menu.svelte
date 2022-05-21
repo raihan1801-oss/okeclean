@@ -121,6 +121,7 @@
 		}
 		.name {
 			font-weight: 700;
+			height: 48px;
 		}
 		.store {
 			padding: 0 8px;

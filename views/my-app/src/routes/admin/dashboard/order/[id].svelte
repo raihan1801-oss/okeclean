@@ -75,6 +75,12 @@
 				: '';
 			order_data = order.data as any;
 			copy = Diff.objectCopy(order);
+			contact = [
+				{ name: 'Pelanggan', nodeId: order.created_by.chat_node_id ?? 0 },
+				...(order.related_by
+					? [{ name: 'Pembersih', nodeId: order.created_by.chat_node_id ?? 0 }]
+					: [])
+			];
 			// business = await client.admin.getBusiness();
 			// order = await client.admin.order(id);
 			// order.createOn = new Date(order.createOn).toISOString().slice(0, -4) + '000' as any;
@@ -237,13 +243,13 @@
 		} finally {
 		}
 	}
-	function inputFile(this: HTMLInputElement) {
-		if (this.files) {
-			delivery_proof = this.files[0];
-			order.delivery.proofImage = URL.createObjectURL(delivery_proof);
-			order = order;
-		}
-	}
+	// function inputFile(this: HTMLInputElement) {
+	// 	if (this.files) {
+	// 		delivery_proof = this.files[0];
+	// 		order.delivery.proofImage = URL.createObjectURL(delivery_proof);
+	// 		order = order;
+	// 	}
+	// }
 </script>
 
 <svelte:head>
@@ -638,12 +644,12 @@
 											<div class="flex-grow" />
 											<div class="text-sm">{order.related_by.name}</div>
 										</div>
-										<div class="flex">
+										<!-- <div class="flex">
 											<div class="flex-[50%] text-sm">Address</div>
 											<div class="flex-[50%] text-sm text-right">
 												<div class="text-sm">{order.related_by.address ?? '----'}</div>
 											</div>
-										</div>
+										</div> -->
 									</section>
 								{:else}
 									<section class="flex flex-col gap-2 p-4 bg-base-200 rounded-md">
@@ -727,7 +733,11 @@
 										<ListItem>
 											<button
 												type="button"
-												on:click={() => goto('/admin/chat?connect_with=' + contact.nodeId)}
+												on:click={() => {
+													if (contact.nodeId) {
+														goto('/admin/chat?connect_with=' + contact.nodeId);
+													}
+												}}
 												class="w-full p-3 hover:bg-gray-400 dark:hover:bg-gray-500"
 												>{contact.name}</button
 											>

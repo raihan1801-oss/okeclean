@@ -1,16 +1,16 @@
 <script context="module" lang="ts">
+	// import Carousel from 'svelte-carousel/src/components/Carousel/Carousel.svelte';
+
 	import { onMount } from 'svelte';
 	import { browser } from '$app/env';
 </script>
 
 <script lang="ts">
-	// import Carousel from 'svelte-carousel/src/components/Carousel/Carousel.svelte';
-
 	export let slides: { src: string; href: string; loaded?: boolean }[] = [];
 	export let desktop = false;
 
-	let Carousel: any; // for saving Carousel component class
-	let carousel: any; // for calling methods of the carousel instance
+	let Carousel: any;
+	let carousel: any;
 
 	onMount(async () => {
 		const module = await import('svelte-carousel');

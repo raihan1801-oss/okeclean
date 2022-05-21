@@ -82,13 +82,13 @@
         await goto("/");
 			},
 		},
-		{
-			name: 'Hapus Akun',
-			icon: mdiDeleteOutline,
-			sub: [],
-			action() {
-			},
-		},
+		// {
+		// 	name: 'Hapus Akun',
+		// 	icon: mdiDeleteOutline,
+		// 	sub: [],
+		// 	action() {
+		// 	},
+		// },
 	];
   let user_login: BuyerClient.User;
   let user_image = "";
@@ -103,7 +103,7 @@
   async function init() {
     try {
       await client.ready;
-      user_login = await client.api.user.auth();
+      user_login = await client.api.cleaner.auth();
       user_image = user_login.image;
     } catch (error: any) {
       if (error.type == client.api.buyer.api.Error.FailedAuthentication.type) {
@@ -165,10 +165,27 @@
       navigation={[]}
     />
     <main class="main">
+      <!-- <Card>
+        <div class="profile">
+          {#if imageUrl}
+            <img class="thumb" src="{imageUrl}" alt="" />
+          {:else}
+            <Avatar class="thumb">
+              <Icon path="{mdiAccountCircleOutline}" />
+            </Avatar>
+          {/if}
+          <div class="text">
+            <div class="t-2">{user_login.name ?? '-'}</div>
+            <div class="t-3">{address?.place || '-'}</div>
+            <div class="t-3">{user_login.telp ?? '-'}</div>
+          </div>
+        </div>
+      </Card> -->
+
       <Card>
         <div class="profile">
           {#if user_image}
-            <img class="thumb" src={user_image} alt="" />
+            <img class="thumb" src={user_image} alt="" width="64" height="64" />
           {:else}
             <Avatar class="thumb">
               <Icon path={mdiAccountCircleOutline} />
@@ -231,12 +248,13 @@
   .loading {
     @include loading-sekeleton;
   }
-  .main {
-    padding: 32px 16px 16px;
-    display: flex;
-    flex-flow: column;
-    @include main;
-  }
+	.main {
+		padding: 16px 0;
+		display: grid;
+		align-content: start;
+		row-gap: 16px;
+		@include main;
+	}
   .profile {
     padding: 16px;
     display: grid;

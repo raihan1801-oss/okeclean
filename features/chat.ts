@@ -10,6 +10,9 @@ import type { PrismaClient } from '@prisma/client';
 import EventEmitter from 'events';
 
 export type CreateContact = {
+	id: number;
+	name: string;
+	image: string;
 	role: string;
 	type: 'per' | 'group';
 };
@@ -77,9 +80,14 @@ export default class ChatFeature {
 		this.channel = new ChatChannelModel(orm);
 		this.message = new ChatMessageModel(orm);
 	}
-	createContact({ role, type }: CreateContact) {
+	createContact({ id, name, image, role, type }: CreateContact) {
 		return this.contact.create({
 			data: {
+				name,
+				image,
+				user: {
+					connect: { id },
+				},
 				role: role,
 				type: type == 'per' ? 'PerToPer' : 'PerToGroup',
 			},

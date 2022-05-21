@@ -28,18 +28,18 @@ const plugin: Plugin = async (server, opts) => {
 		cwd: options.root,
 	});
 
-	for (const dir of dirs) {
-		if (dir.endsWith('.html')) {
-			const pathname = options.prefix + path.dirname(dir);
-			const pathname_fix =
-				(pathname.endsWith('/.') ? pathname.slice(0, -2) : pathname) || '/';
-			const dir_res = path.dirname(path.join(options.root, dir));
+	// for (const dir of dirs) {
+	// 	if (dir.endsWith('.html')) {
+	// 		const pathname = options.prefix + path.dirname(dir);
+	// 		const pathname_fix =
+	// 			(pathname.endsWith('/.') ? pathname.slice(0, -2) : pathname) || '/';
+	// 		const dir_res = path.dirname(path.join(options.root, dir));
 
-			server.get(pathname_fix, (request, reply) => {
-				reply.sendFile('index.html', dir_res);
-			});
-		}
-	}
+	// 		server.get(pathname_fix, (request, reply) => {
+	// 			reply.sendFile('index.html', dir_res);
+	// 		});
+	// 	}
+	// }
 };
 
 declare const views: Plugin;

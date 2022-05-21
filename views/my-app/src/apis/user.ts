@@ -43,6 +43,7 @@ import type {
 	QueringCreateMany,
 	QueringUpdateMany,
 	QueringDeleteMany,
+	GetParam,
 } from '$server/schemas/v0-alpha.1/user';
 export type {
 	RegisterData,
@@ -190,32 +191,46 @@ export default class UserClientApi {
 	public async subscribe(data: Subscribe) { }
 	public async unsubscribe(data: Unsubscribe) { }
 
-	// public async verify_reset(data: Verify) {
-	// 	const response = await this.api
-	// 		.request({
-	// 			endpoint: 'verify-reset',
-	// 			method: 'POST',
-	// 			headers: { authorization: 'Bearer ' + (await this.getToken()) },
-	// 			body: data,
-	// 		})
-	// 		.send<Data>();
-	// 	return response.read();
-	// }
-
-	public async search<Query extends SearchQuery>(
-		data: ValidateQuery<Query, SearchQuery>
+	public async get(
+		data: GetParam
 	) {
 		const response = await this.api
-			.request<Query>({
+			.request<GetParam>({
 				endpoint: 'search',
 				method: 'POST',
 				headers: { authorization: 'Bearer ' + (await this.getToken()) },
 
 				body: data,
 			})
-			.send<QueringSearch<Query>>();
+			.send<Data>();
 		return response.read();
 	}
+
+	public async get_all() {
+		const response = await this.api
+			.request({
+				endpoint: 'search-many',
+				method: 'GET',
+				headers: { authorization: 'Bearer ' + (await this.getToken()) },
+			})
+			.send<Data[]>();
+		return response.read();
+	}
+
+	// public async search<Query extends SearchQuery>(
+	// 	data: ValidateQuery<Query, SearchQuery>
+	// ) {
+	// 	const response = await this.api
+	// 		.request<Query>({
+	// 			endpoint: 'search',
+	// 			method: 'POST',
+	// 			headers: { authorization: 'Bearer ' + (await this.getToken()) },
+
+	// 			body: data,
+	// 		})
+	// 		.send<QueringSearch<Query>>();
+	// 	return response.read();
+	// }
 	public async update<Query extends UpdateQuery>(
 		data: ValidateQuery<Query, UpdateQuery>
 	) {
@@ -228,6 +243,20 @@ export default class UserClientApi {
 				body: data,
 			})
 			.send<QueringUpdate<Query>>();
+		return response.read();
+	}
+	public async delete(
+		data: GetParam
+	) {
+		const response = await this.api
+			.request<GetParam>({
+				endpoint: 'delete',
+				method: 'DELETE',
+				headers: { authorization: 'Bearer ' + (await this.getToken()) },
+
+				body: data,
+			})
+			.send<Data>();
 		return response.read();
 	}
 	// public async aggregate<Query extends AggregateQuery>(

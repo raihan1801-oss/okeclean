@@ -21,7 +21,13 @@
 	import { onMount, onDestroy, getContext } from "svelte";
 	import { derived, writable } from "svelte/store";
 	import { fade, slide } from "svelte/transition";
-	import { wait, Diff, unsafeDuplicate, element_support } from "$lib/helper";
+	import {
+		wait,
+		Diff,
+		unsafeDuplicate,
+		element_support,
+		ProcessManagementUnsafe
+	} from '$lib/helper';
 	import * as rules from "$lib/rules";
 
 	import type { BuyerClient } from "../../__layout.svelte";
@@ -33,6 +39,7 @@
 
 <script lang="ts">
 	const client = getContext<BuyerClient>("buyer");
+	const proccess = new ProcessManagementUnsafe();
 	// let profile = writable(buyer.get());
 	let user_login: BuyerClient.User;
 	let cached = {};
@@ -47,7 +54,7 @@
 	async function init() {
 		try {
 			await client.ready;
-			user_login = await client.api.user.auth();
+			user_login = await client.api.cleaner.auth();
 			// if (!user_login) {
 			// 	await buyer.ready;
 			// 	user_login = await buyer.auth();
@@ -84,16 +91,20 @@
 		try {
 			loading();
 			isSubmitDisable = true;
-
 			if (!user_login) return;
-
+			proccess.start();
+			await proccess.sleeped;
 			const changed = Diff.object(cached, user_login);
-
 			if (changed) {
-				// const result = await buyer.update(changed, image);
-				// buyer.set(result);
+				client.api.user.update({
+					where: {
+						id: user_login.id
+					},
+					data: changed
+				});
 				Object.assign(cached, changed);
 			}
+			proccess.finish();
 		} catch (error: any) {
 			console.error(error);
 		} finally {
@@ -116,7 +127,15 @@
 			show_pick_image = false;
 			image = file;
 			user_login.image = file.name;
+			user_login = user_login;
 			imageUrl = URL.createObjectURL(file);
+			proccess.queue({ user_login, image }, async ({ user_login, image }) => {
+				user_login.image = await client.api.user.uploadImage(
+					`${user_login.id}/${image.name}`,
+					image
+				);
+				user_login = user_login;
+			});
 		}
 	}
 </script>

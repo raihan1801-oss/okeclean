@@ -18,7 +18,8 @@
 
 	import { Currency } from '$lib/helper';
 
-	import type { ClientApi, User } from '../../__layout.svelte';
+	import type { ClientApi } from '$apis/index';
+	import type { User } from '$lib/store';
 
 	const title = 'Total Sales';
 	const desc = '';
@@ -34,14 +35,20 @@
 	let progress: Progress;
 
 	let fake = Array(6);
-	let sales: ClientApi.Admin.Sale[] = [];
+	let sales: ClientApi.Transaction[] = [];
 
 	onMount(init);
 
 	async function init() {
 		try {
 			await client.ready;
-			sales = await client.admin.sales();
+			const transactions = await client.transaction.get_all();
+			for (const transaction of transactions) {
+				if (transaction.status == 'finish') {
+					sales.push(transaction);
+				}
+			}
+			sales = sales;
 			fake = Array(0);
 		} catch (error: any) {
 		} finally {
@@ -61,7 +68,7 @@
 	<meta name="description" content={desc} />
 </svelte:head>
 
-<Page {mode} class="text-gray-900 bg-gray-50 dark:text-gray-50 dark:bg-gray-900">
+<Page {mode} class="bg-neutral text-neutral-content">
 	<section transition:fade class="flex">
 		<Drawer show={drawerOpened} class="bg-base-100">
 			<DrawerContent />
@@ -80,9 +87,13 @@
 						<ListItem>
 							<a
 								href="sale/{sale.id}"
-								class="flex items-center gap-4 p-2 bg-base-100 rounded-md hover:bg-primary active:bg-secondary transition"
+								class="flex items-center gap-4 px-3 py-2 bg-base-100 rounded-md hover:bg-primary active:bg-secondary transition"
 							>
-								<div class="stack stack-x flex-[5%] justify-start">
+								<div class="flex flex-col justify-between">
+									<div class="text-sm">{sale.data.services.join('')}</div>
+									<div class="text-sm">Rp. {Currency.toMoney(sale.cost + '')}</div>
+								</div>
+								<!-- <div class="stack stack-x flex-[5%] justify-start">
 									{#each sale.item as item}
 										<img
 											src={item.product.image}
@@ -90,8 +101,8 @@
 											class="w-11 h-11 aspect-1 object-cover object-center rounded-md"
 										/>
 									{/each}
-								</div>
-								<div class="flex flex-[25%]">
+								</div> -->
+								<!-- <div class="flex flex-[25%]">
 									<div class="text-sm trunc-2">
 										{sale.item.map((item) => item.product.name).join(', ')}
 									</div>
@@ -127,7 +138,7 @@
 											/></svg
 										>
 									{/each}
-								</div>
+								</div> -->
 							</a>
 						</ListItem>
 					{/each}

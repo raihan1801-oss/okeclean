@@ -60,8 +60,8 @@
 				<div class="surface">
 					<img
 						class="logo"
-						src="logo.png"
-						alt="ada ikan"
+						src="/logo.png"
+						alt="oke clean"
 						width="150"
 						height="150" />
 					<div class="btns">

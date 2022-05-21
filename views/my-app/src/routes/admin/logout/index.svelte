@@ -25,7 +25,7 @@
 		try {
 			await client.ready;
 			await client.user.token.remove();
-			service.register('/service-worker.js');
+			// service.unregister();
 			if (user_login) {
 				// service.subscribe({
 				// 	role: 'internal',
